@@ -4,6 +4,7 @@ use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\IssueController;
+use App\Http\Controllers\BackupController;
 use App\Http\Middleware\EnsureVisitorCookie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -44,4 +45,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     Route::put('/articles/{article}', [ArticleController::class, 'update']);
     Route::delete('/articles/{article}', [ArticleController::class, 'destroy']);
+
+    // Backup Routes (Admin only)
+    Route::middleware(['admin'])->group(function () {
+        Route::get('/backups', [BackupController::class, 'index']);
+        Route::get('/backups/history', [BackupController::class, 'history']);
+        Route::post('/backups/upload', [BackupController::class, 'upload']);
+        Route::get('/backups/download', [BackupController::class, 'download'])->name('backup.download');
+        Route::post('/backups/create', [BackupController::class, 'create']);
+        Route::post('/backups/restore', [BackupController::class, 'restore']);
+    });
 });

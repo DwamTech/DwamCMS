@@ -140,8 +140,14 @@ class ArticleController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Article $article)
+    public function destroy(Request $request, Article $article)
     {
+        $user = $request->user();
+
+        if (!$user->isAdmin() && !$user->isAuthor()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
         $article->delete(); // Soft delete because of SoftDeletes trait
 
         return response()->json([
