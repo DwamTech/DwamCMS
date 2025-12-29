@@ -15,12 +15,39 @@ class AuthController extends Controller
     public function register(StoreUserRequest $request)
     {
         $request->validated($request->all());
+        $role = env('USER', 'user');
+
+        // Check if there is a token AND the user is Admin
+        if (Auth::guard('sanctum')->check()) {
+            $currentUser = Auth::guard('sanctum')->user();
+            if ($currentUser->role === env('ADMIN', 'admin')) {
+                // Allow Admin to set the role
+                $role = $request->role ?? env('USER', 'user');
+            }
+        }
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => $request->role ?? env('AUTHOR', 'author'),
+            'role' => $role,
+        ]);
+
+        return response()->json([
+            'user' => new UserResource($user),
+            'token' => $user->createToken('API Token of ' . $user->name)->plainTextToken,
+        ]);
+    }
+
+    public function registerAdmin(StoreUserRequest $request)
+    {
+        $request->validated($request->all());
+
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'password' => Hash::make($request->password),
+            'role' => env('ADMIN', 'admin'),
         ]);
 
         return response()->json([
@@ -53,6 +80,33 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logged out successfully.',
+        ]);
+    }
+
+    // set role for admin
+    public function setRole(Request $request, User $user)
+    {
+        // $user = $request->user();
+        $data = $request->validate([
+            'role' => ['required', 'string', 'in:' . implode(',', [
+                env('ADMIN', 'admin'),
+                env('EDITOR', 'editor'),
+                env('AUTHOR', 'author'),
+                env('REVIEWER', 'reviewer'),
+                env('USER', 'user'),
+            ])],
+        ]);
+        // $user->role = $request->role;
+        if ( $request->user()->role !== env('ADMIN', 'admin')) {
+            return response()->json([
+                'message' => 'You are not authorized to perform this action.',
+            ], 403);
+        }
+        $user->role = $data['role'];
+        $user->save();
+
+        return response()->json([
+            'message' => 'Role updated successfully.',
         ]);
     }
 }

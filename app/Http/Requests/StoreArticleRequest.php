@@ -22,7 +22,7 @@ class StoreArticleRequest extends FormRequest
     {
         $this->merge([
             'section_id' => $this->route('section'),
-            'issue_id' => $this->route('issue'),
+            // 'issue_id' => $this->route('issue'),
         ]);
     }
 
@@ -35,7 +35,7 @@ class StoreArticleRequest extends FormRequest
     {
         return [
             'section_id' => 'required|exists:sections,id',
-            'issue_id' => 'required|exists:issues,id',
+            // 'issue_id' => 'nullable|exists:issues,id',
             'title' => 'required|string|max:255',
             'slug' => 'required|string|unique:articles,slug|max:255',
             'excerpt' => 'nullable|string',
@@ -45,6 +45,7 @@ class StoreArticleRequest extends FormRequest
             'gregorian_date' => 'nullable|string',
             'hijri_date' => 'nullable|string',
             'references' => 'nullable|string',
+            'keywords' => 'nullable|string',
             'status' => ['required', Rule::in([
                 env('ARTICLE_STATUS_DRAFT', 'draft'),
                 env('ARTICLE_STATUS_PUBLISHED', 'published'),

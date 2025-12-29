@@ -17,6 +17,7 @@ return new class extends Migration
                 env('EDITOR', 'editor'),
                 env('AUTHOR', 'author'),
                 env('REVIEWER', 'reviewer'),
+                env('USER_ROLE', 'user'),
             ])->default(env('AUTHOR', 'author'));
         });
     }

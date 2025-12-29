@@ -24,7 +24,7 @@ class ArticleController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Article::with(['section', 'issue']);
+        $query = Article::with(['section']);
 
         // Filters
         if ($request->filled('status')) {
@@ -50,13 +50,14 @@ class ArticleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreArticleRequest $request, $section_id = null, $issue_id = null)
+    public function store(StoreArticleRequest $request, $section_id = null)
     {
         $data = $request->validated();
         
         // If IDs are passed via route, ensure they are used (though merge in request handles validation)
         if ($section_id) $data['section_id'] = $section_id;
-        if ($issue_id) $data['issue_id'] = $issue_id;
+        // issue_id is now optional and not passed via route in this context
+        // if ($issue_id) $data['issue_id'] = $issue_id;
 
         // Assign current user
         $data['user_id'] = $request->user()->id;
@@ -82,7 +83,7 @@ class ArticleController extends Controller
      */
     public function show($id)
     {
-        $article = Article::with(['section', 'issue'])->findOrFail($id);
+        $article = Article::with(['section'])->findOrFail($id);
 
         // Get visited articles from cookie
         $visitedArticles = json_decode(Cookie::get('visited_articles', '[]'), true);

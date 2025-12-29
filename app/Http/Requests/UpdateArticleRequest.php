@@ -24,7 +24,7 @@ class UpdateArticleRequest extends FormRequest
     {
         return [
             'section_id' => 'sometimes|exists:sections,id',
-            'issue_id' => 'sometimes|exists:issues,id',
+            // 'issue_id' => 'nullable|exists:issues,id',
             'title' => 'sometimes|string|max:255',
             'slug' => ['sometimes', 'string', 'max:255', Rule::unique('articles', 'slug')->ignore($this->route('article'))],
             'excerpt' => 'nullable|string',
@@ -34,6 +34,7 @@ class UpdateArticleRequest extends FormRequest
             'gregorian_date' => 'nullable|string',
             'hijri_date' => 'nullable|string',
             'references' => 'nullable|string',
+            'keywords' => 'nullable|string',
             'status' => ['sometimes', Rule::in([
                 env('ARTICLE_STATUS_DRAFT', 'draft'),
                 env('ARTICLE_STATUS_PUBLISHED', 'published'),

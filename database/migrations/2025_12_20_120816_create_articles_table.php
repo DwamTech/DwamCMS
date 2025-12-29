@@ -31,6 +31,7 @@ return new class extends Migration
             ])->default(env('ARTICLE_STATUS_DRAFT', 'draft'));
             $table->timestamp('published_at')->nullable();
             $table->integer('views_count')->default(0);
+            $table->float('rating')->default(0.0);
             $table->softDeletes();
             $table->timestamps();
         });

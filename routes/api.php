@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']);
+Route::post('/register/admin', [AuthController::class, 'registerAdmin']);
 Route::post('/login', [AuthController::class, 'login']);
 
 // Public section routes
@@ -25,6 +26,10 @@ Route::get('/articles', [ArticleController::class, 'index']);
 Route::get('/articles/{id}', [ArticleController::class, 'show'])
     ->middleware(EnsureVisitorCookie::class);
 
+// Public visuals routes
+Route::get('/visuals', [\App\Http\Controllers\VisualController::class, 'index']);
+Route::get('/visuals/{visual}', [\App\Http\Controllers\VisualController::class, 'show']);
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', function (Request $request) {
@@ -37,14 +42,19 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::delete('/issues/{issue}', [IssueController::class, 'destroy']);
 
     // Protected article routes (Create, Update, Delete)
-    // Create article with section and issue in URL
-    Route::post('/sections/{section}/issues/{issue}/articles', [ArticleController::class, 'store']);
-    
+    // Create article with section in URL
+    Route::post('/sections/{section}/articles', [ArticleController::class, 'store']);
+    // Or just generic store route
+    Route::post('/articles', [ArticleController::class, 'store']);
+
     // Legacy store route (optional, can keep or remove based on preference, removing to force new structure)
     // Route::post('/articles', [ArticleController::class, 'store']); 
 
     Route::put('/articles/{article}', [ArticleController::class, 'update']);
     Route::delete('/articles/{article}', [ArticleController::class, 'destroy']);
+
+    // Visuals Routes
+    Route::apiResource('visuals', \App\Http\Controllers\VisualController::class)->except(['show', 'index']);
 
     // Backup Routes (Admin only)
     Route::middleware(['admin'])->group(function () {
@@ -54,5 +64,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/backups/download', [BackupController::class, 'download'])->name('backup.download');
         Route::post('/backups/create', [BackupController::class, 'create']);
         Route::post('/backups/restore', [BackupController::class, 'restore']);
+        // Route::post('/register', [AuthController::class, 'register']);
+
+        // Route::post('/set-role/{user}', [AuthController::class, 'setRole']);
+
     });
 });

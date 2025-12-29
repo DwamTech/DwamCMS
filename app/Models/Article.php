@@ -23,6 +23,7 @@ class Article extends Model
         'gregorian_date',
         'hijri_date',
         'references',
+        'keywords',
         'status',
         'published_at',
         'views_count',
@@ -48,8 +49,8 @@ class Article extends Model
         return $this->belongsTo(Section::class);
     }
 
-    public function issue()
-    {
-        return $this->belongsTo(Issue::class);
-    }
+    // public function issue()
+    // {
+    //     return $this->belongsTo(Issue::class)->withDefault();
+    // }
 }

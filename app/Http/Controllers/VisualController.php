@@ -1,0 +1,128 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Visual;
+use App\Http\Requests\StoreVisualRequest;
+use App\Http\Requests\UpdateVisualRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+
+class VisualController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     */
+    public function index(Request $request)
+    {
+        $query = Visual::with(['section', 'user']);
+
+        if ($request->filled('section_id')) {
+            $query->where('section_id', $request->section_id);
+        }
+
+        if ($request->filled('author')) {
+            $query->where('user_id', $request->author);
+        }
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        $visuals = $query->latest()->paginate(15);
+
+        return response()->json($visuals);
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(StoreVisualRequest $request)
+    {
+        $data = $request->validated();
+        $data['user_id'] = $request->user()->id;
+
+        // Handle File Upload
+        if ($request->hasFile('file') && $data['type'] === 'upload') {
+            $data['file_path'] = $request->file('file')->store('visuals/videos', 'public');
+        }
+
+        // Handle Thumbnail Upload
+        if ($request->hasFile('thumbnail')) {
+            $data['thumbnail'] = $request->file('thumbnail')->store('visuals/thumbnails', 'public');
+        }
+
+        $visual = Visual::create($data);
+
+        return response()->json([
+            'message' => 'Visual created successfully',
+            'visual' => $visual
+        ], 201);
+    }
+
+    /**
+     * Display the specified resource.
+     */
+    public function show($id)
+    {
+        $visual = Visual::with(['section', 'user'])->findOrFail($id);
+
+        // Increment views
+        $visual->increment('views_count');
+
+        return response()->json($visual);
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(UpdateVisualRequest $request, Visual $visual)
+    {
+        $data = $request->validated();
+
+        // Handle File Upload
+        if ($request->hasFile('file') && isset($data['type']) && $data['type'] === 'upload') {
+            // Delete old file if exists
+            if ($visual->file_path) {
+                Storage::disk('public')->delete($visual->getRawOriginal('file_path'));
+            }
+            $data['file_path'] = $request->file('file')->store('visuals/videos', 'public');
+        }
+
+        // Handle Thumbnail Upload
+        if ($request->hasFile('thumbnail')) {
+            // Delete old thumbnail if exists
+            if ($visual->thumbnail) {
+                Storage::disk('public')->delete($visual->getRawOriginal('thumbnail'));
+            }
+            $data['thumbnail'] = $request->file('thumbnail')->store('visuals/thumbnails', 'public');
+        }
+
+        $visual->update($data);
+
+        return response()->json([
+            'message' => 'Visual updated successfully',
+            'visual' => $visual
+        ]);
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(Visual $visual)
+    {
+        // Delete files
+        if ($visual->file_path) {
+            Storage::disk('public')->delete($visual->getRawOriginal('file_path'));
+        }
+        if ($visual->thumbnail) {
+            Storage::disk('public')->delete($visual->getRawOriginal('thumbnail'));
+        }
+
+        $visual->delete();
+
+        return response()->json([
+            'message' => 'Visual deleted successfully'
+        ]);
+    }
+}
