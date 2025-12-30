@@ -30,6 +30,22 @@ Route::get('/articles/{id}', [ArticleController::class, 'show'])
 Route::get('/visuals', [\App\Http\Controllers\VisualController::class, 'index']);
 Route::get('/visuals/{visual}', [\App\Http\Controllers\VisualController::class, 'show']);
 
+// Public Individual Support Routes
+Route::prefix('support/individual')->group(function () {
+    Route::post('store', [\App\Http\Controllers\API\IndividualSupportRequestController::class, 'store']);
+    Route::post('status', [\App\Http\Controllers\API\IndividualSupportRequestController::class, 'checkStatus']);
+});
+
+// Public Institutional Support Routes
+Route::prefix('support/institutional')->group(function () {
+    Route::post('store', [\App\Http\Controllers\API\InstitutionalSupportRequestController::class, 'store']);
+    Route::post('status', [\App\Http\Controllers\API\InstitutionalSupportRequestController::class, 'checkStatus']);
+});
+
+// Support Settings (Public)
+Route::get('support/settings', [\App\Http\Controllers\API\SupportSettingController::class, 'index']);
+
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', function (Request $request) {
@@ -68,5 +84,31 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         // Route::post('/set-role/{user}', [AuthController::class, 'setRole']);
 
+        // Support Settings (Admin Update)
+        Route::post('/support/settings/update', [\App\Http\Controllers\API\SupportSettingController::class, 'update']); 
+        
+        // Library Management (Admin)
+        Route::apiResource('library/series', \App\Http\Controllers\API\BookSeriesController::class);
+        Route::apiResource('library/books', \App\Http\Controllers\API\BookController::class);
+
+        // Feedback Management (Admin)
+        Route::get('feedback', [\App\Http\Controllers\API\FeedbackController::class, 'index']);
     });
 });
+
+// Admin Feedback (Temporarily Public for Testing)
+// Route::get('admin/feedback', [\App\Http\Controllers\API\FeedbackController::class, 'index']); // Removed
+
+// Public Library Routes
+Route::prefix('library')->group(function() {
+    Route::get('books', [\App\Http\Controllers\API\BookController::class, 'index']);
+    Route::get('books/{id}', [\App\Http\Controllers\API\BookController::class, 'show']);
+    Route::post('books/{id}/rate', [\App\Http\Controllers\API\BookController::class, 'rate']);
+});
+
+// Platform Satisfaction Rating (Public)
+Route::get('/platform-rating', [\App\Http\Controllers\API\PlatformRatingController::class, 'index']);
+Route::post('/platform-rating', [\App\Http\Controllers\API\PlatformRatingController::class, 'store']);
+
+// Feedback (Public)
+Route::post('/feedback', [\App\Http\Controllers\API\FeedbackController::class, 'store']);
