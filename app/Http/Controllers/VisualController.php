@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Visual;
 use App\Http\Requests\StoreVisualRequest;
 use App\Http\Requests\UpdateVisualRequest;
+use App\Models\Section;
+use App\Models\Visual;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-
-use App\Models\Section;
 
 class VisualController extends Controller
 {
@@ -66,7 +65,7 @@ class VisualController extends Controller
 
         return response()->json([
             'message' => 'Visual created successfully',
-            'visual' => $visual
+            'visual' => $visual,
         ], 201);
     }
 
@@ -90,6 +89,13 @@ class VisualController extends Controller
     {
         $data = $request->validated();
 
+        if (array_key_exists('section_id', $data) && empty($data['section_id'])) {
+            $defaultSection = Section::where('slug', 'general')->first();
+            if ($defaultSection) {
+                $data['section_id'] = $defaultSection->id;
+            }
+        }
+
         // Handle File Upload
         if ($request->hasFile('file') && isset($data['type']) && $data['type'] === 'upload') {
             // Delete old file if exists
@@ -112,7 +118,7 @@ class VisualController extends Controller
 
         return response()->json([
             'message' => 'Visual updated successfully',
-            'visual' => $visual
+            'visual' => $visual,
         ]);
     }
 
@@ -132,7 +138,7 @@ class VisualController extends Controller
         $visual->delete();
 
         return response()->json([
-            'message' => 'Visual deleted successfully'
+            'message' => 'Visual deleted successfully',
         ]);
     }
 }

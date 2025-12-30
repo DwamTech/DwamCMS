@@ -15,6 +15,21 @@ class UpdateArticleRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('section_id') && ! is_numeric($this->section_id) && ! empty($this->section_id)) {
+            $section = \App\Models\Section::where('slug', $this->section_id)
+                ->orWhere('name', $this->section_id)
+                ->first();
+
+            if ($section) {
+                $this->merge(['section_id' => $section->id]);
+            } else {
+                $this->merge(['section_id' => null]);
+            }
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *

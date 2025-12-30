@@ -51,12 +51,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Legacy store route (optional, can keep or remove based on preference, removing to force new structure)
     // Route::post('/articles', [ArticleController::class, 'store']);
 
-    Route::put('/articles/{article}', [ArticleController::class, 'update']);
+    Route::match(['put', 'post'], '/articles/{article}', [ArticleController::class, 'update']);
     Route::delete('/articles/{article}', [ArticleController::class, 'destroy']);
 
     // Visuals Routes
     Route::post('/visuals', [VisualController::class, 'store']);
-    Route::match(['put', 'post'], '/visuals/{visual}', [VisualController::class, 'update']); // Use POST with _method=PUT for FormData
+    Route::put('/visuals/{visual}', [VisualController::class, 'update']);
     Route::delete('/visuals/{visual}', [VisualController::class, 'destroy']);
     // Route::apiResource('visuals', VisualController::class)->except(['show', 'index']);
 
