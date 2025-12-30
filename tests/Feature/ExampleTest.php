@@ -16,4 +16,28 @@ class ExampleTest extends TestCase
 
         $response->assertStatus(200);
     }
+
+    public function test_visual_update_accepts_post_method(): void
+    {
+        $found = collect(app('router')->getRoutes()->getRoutes())
+            ->contains(function ($route) {
+                return $route->uri() === 'api/visuals/{visual}'
+                    && in_array('POST', $route->methods(), true)
+                    && str_contains($route->getActionName(), 'VisualController@update');
+            });
+
+        $this->assertTrue($found);
+    }
+
+    public function test_article_update_accepts_post_method(): void
+    {
+        $found = collect(app('router')->getRoutes()->getRoutes())
+            ->contains(function ($route) {
+                return $route->uri() === 'api/articles/{article}'
+                    && in_array('POST', $route->methods(), true)
+                    && str_contains($route->getActionName(), 'ArticleController@update');
+            });
+
+        $this->assertTrue($found);
+    }
 }

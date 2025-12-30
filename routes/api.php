@@ -2,9 +2,10 @@
 
 use App\Http\Controllers\ArticleController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\SectionController;
-use App\Http\Controllers\IssueController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\IssueController;
+use App\Http\Controllers\SectionController;
+use App\Http\Controllers\VisualController;
 use App\Http\Middleware\EnsureVisitorCookie;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -27,8 +28,8 @@ Route::get('/articles/{id}', [ArticleController::class, 'show'])
     ->middleware(EnsureVisitorCookie::class);
 
 // Public visuals routes
-Route::get('/visuals', [\App\Http\Controllers\VisualController::class, 'index']);
-Route::get('/visuals/{visual}', [\App\Http\Controllers\VisualController::class, 'show']);
+Route::get('/visuals', [VisualController::class, 'index']);
+Route::get('/visuals/{visual}', [VisualController::class, 'show']);
 
 // Public Individual Support Routes
 Route::prefix('support/individual')->group(function () {
@@ -64,13 +65,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/articles', [ArticleController::class, 'store']);
 
     // Legacy store route (optional, can keep or remove based on preference, removing to force new structure)
-    // Route::post('/articles', [ArticleController::class, 'store']); 
+    // Route::post('/articles', [ArticleController::class, 'store']);
 
-    Route::put('/articles/{article}', [ArticleController::class, 'update']);
+    Route::match(['put', 'post'], '/articles/{article}', [ArticleController::class, 'update']);
     Route::delete('/articles/{article}', [ArticleController::class, 'destroy']);
 
     // Visuals Routes
-    Route::apiResource('visuals', \App\Http\Controllers\VisualController::class)->except(['show', 'index']);
+    Route::post('/visuals', [VisualController::class, 'store']);
+    Route::put('/visuals/{visual}', [VisualController::class, 'update']);
+    Route::delete('/visuals/{visual}', [VisualController::class, 'destroy']);
+    // Route::apiResource('visuals', VisualController::class)->except(['show', 'index']);
 
     // Backup Routes (Admin only)
     Route::middleware(['admin'])->group(function () {
