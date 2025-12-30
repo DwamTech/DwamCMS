@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Section;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
 class DefaultSectionSeeder extends Seeder
 {
@@ -16,7 +15,7 @@ class DefaultSectionSeeder extends Seeder
     {
         $user = User::first(); // Assign to the first user (likely admin) or create a system user
 
-        if (!$user) {
+        if (! $user) {
             $user = User::create([
                 'name' => 'System Admin',
                 'email' => 'admin@system.com',
@@ -34,5 +33,5 @@ class DefaultSectionSeeder extends Seeder
                 'user_id' => $user->id,
             ]
         );
-    } 
+    }
 }

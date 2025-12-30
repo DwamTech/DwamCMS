@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Issue;
 use App\Http\Requests\StoreIssueRequest;
 use App\Http\Requests\UpdateIssueRequest;
-use App\Services\ImageUploadService;
+use App\Models\Issue;
 use App\Services\FileUploadService;
+use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
-use Intervention\Image\Colors\Rgb\Channels\Red;
 
 class IssueController extends Controller
 {
     protected $imageService;
+
     protected $fileUploadService;
 
     public function __construct(ImageUploadService $imageService, FileUploadService $fileUploadService)
@@ -27,6 +27,7 @@ class IssueController extends Controller
     public function index()
     {
         $issues = Issue::orderBy('issue_number', 'desc')->paginate(10);
+
         return response()->json($issues);
     }
 
@@ -37,12 +38,12 @@ class IssueController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isAdmin() && !$user->isAuthor()) {
+        if (! $user->isAdmin() && ! $user->isAuthor()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $data = $request->validated();
-        
+
         // Assign current user
         $data['user_id'] = $user->id;
         // $data['issue_number']=
@@ -75,7 +76,7 @@ class IssueController extends Controller
 
         return response()->json([
             'message' => 'Issue created successfully',
-            'issue' => $issue
+            'issue' => $issue,
         ], 201);
     }
 
@@ -85,10 +86,10 @@ class IssueController extends Controller
     public function show($id)
     {
         $issue = Issue::with('articles')->findOrFail($id);
-        
+
         // Increment views
         $issue->increment('views_count');
-        
+
         return response()->json($issue);
     }
 
@@ -99,7 +100,7 @@ class IssueController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isAdmin() && !$user->isAuthor()) {
+        if (! $user->isAdmin() && ! $user->isAuthor()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -148,7 +149,7 @@ class IssueController extends Controller
 
         return response()->json([
             'message' => 'Issue updated successfully',
-            'issue' => $issue
+            'issue' => $issue,
         ]);
     }
 
@@ -159,7 +160,7 @@ class IssueController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isAdmin() && !$user->isAuthor()) {
+        if (! $user->isAdmin() && ! $user->isAuthor()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
@@ -181,7 +182,7 @@ class IssueController extends Controller
         $issue->delete();
 
         return response()->json([
-            'message' => 'Issue deleted successfully'
+            'message' => 'Issue deleted successfully',
         ]);
     }
 }

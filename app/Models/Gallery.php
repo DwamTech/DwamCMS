@@ -5,19 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Visual extends Model
+class Gallery extends Model
 {
     use HasFactory;
 
     protected $fillable = [
         'section_id',
         'user_id',
-        'title',
+        'name',
         'description',
-        'type', // 'upload', 'link'
-        'file_path',
-        'url',
-        'thumbnail',
+        'cover_image',
         'keywords',
         'views_count',
         'rating',
@@ -30,20 +27,13 @@ class Visual extends Model
         'user_id' => 'integer',
     ];
 
-    // Accessor for thumbnail full URL
-    public function getThumbnailAttribute($value)
+    public function getCoverImageAttribute($value)
     {
         if ($value) {
-            return asset('storage/'.$value);
-        }
+            if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
+                return $value;
+            }
 
-        return null;
-    }
-
-    // Accessor for file_path full URL
-    public function getFilePathAttribute($value)
-    {
-        if ($value) {
             return asset('storage/'.$value);
         }
 
@@ -55,8 +45,13 @@ class Visual extends Model
         return $this->belongsTo(Section::class);
     }
 
-    public function user() // Author
+    public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function images()
+    {
+        return $this->hasMany(GalleryImage::class)->orderBy('sort_order');
     }
 }

@@ -40,4 +40,28 @@ class ExampleTest extends TestCase
 
         $this->assertTrue($found);
     }
+
+    public function test_audio_update_accepts_post_method(): void
+    {
+        $found = collect(app('router')->getRoutes()->getRoutes())
+            ->contains(function ($route) {
+                return $route->uri() === 'api/audios/{audio}'
+                    && in_array('POST', $route->methods(), true)
+                    && str_contains($route->getActionName(), 'AudioController@update');
+            });
+
+        $this->assertTrue($found);
+    }
+
+    public function test_gallery_update_accepts_post_method(): void
+    {
+        $found = collect(app('router')->getRoutes()->getRoutes())
+            ->contains(function ($route) {
+                return $route->uri() === 'api/galleries/{gallery}'
+                    && in_array('POST', $route->methods(), true)
+                    && str_contains($route->getActionName(), 'GalleryController@update');
+            });
+
+        $this->assertTrue($found);
+    }
 }

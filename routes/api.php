@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\ArticleController;
+use App\Http\Controllers\AudioController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackupController;
+use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\IssueController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\VisualController;
@@ -31,6 +33,14 @@ Route::get('/articles/{id}', [ArticleController::class, 'show'])
 Route::get('/visuals', [VisualController::class, 'index']);
 Route::get('/visuals/{visual}', [VisualController::class, 'show']);
 
+// Public audios routes
+Route::get('/audios', [AudioController::class, 'index']);
+Route::get('/audios/{audio}', [AudioController::class, 'show']);
+
+// Public galleries routes
+Route::get('/galleries', [GalleryController::class, 'index']);
+Route::get('/galleries/{gallery}', [GalleryController::class, 'show']);
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', function (Request $request) {
@@ -56,9 +66,19 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
     // Visuals Routes
     Route::post('/visuals', [VisualController::class, 'store']);
-    Route::put('/visuals/{visual}', [VisualController::class, 'update']);
+    Route::match(['put', 'post'], '/visuals/{visual}', [VisualController::class, 'update']);
     Route::delete('/visuals/{visual}', [VisualController::class, 'destroy']);
     // Route::apiResource('visuals', VisualController::class)->except(['show', 'index']);
+
+    // Audios Routes
+    Route::post('/audios', [AudioController::class, 'store']);
+    Route::match(['put', 'post'], '/audios/{audio}', [AudioController::class, 'update']);
+    Route::delete('/audios/{audio}', [AudioController::class, 'destroy']);
+
+    // Galleries Routes
+    Route::post('/galleries', [GalleryController::class, 'store']);
+    Route::match(['put', 'post'], '/galleries/{gallery}', [GalleryController::class, 'update']);
+    Route::delete('/galleries/{gallery}', [GalleryController::class, 'destroy']);
 
     // Backup Routes (Admin only)
     Route::middleware(['admin'])->group(function () {
