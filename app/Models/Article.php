@@ -13,7 +13,7 @@ class Article extends Model
     protected $fillable = [
         'user_id',
         'section_id',
-        'issue_id',
+        // 'issue_id',
         'title',
         'slug',
         'excerpt',
@@ -39,8 +39,9 @@ class Article extends Model
     public function getFeaturedImageAttribute($value)
     {
         if ($value) {
-            return asset('storage/' . $value);
+            return asset('storage/'.$value);
         }
+
         return null;
     }
 
@@ -49,8 +50,8 @@ class Article extends Model
         return $this->belongsTo(Section::class);
     }
 
-    // public function issue()
-    // {
-    //     return $this->belongsTo(Issue::class)->withDefault();
-    // }
+    public function issue()
+    {
+        return $this->belongsTo(Issue::class)->withDefault();
+    }
 }

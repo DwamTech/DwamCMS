@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Article;
 use App\Http\Requests\StoreArticleRequest;
 use App\Http\Requests\UpdateArticleRequest;
+use App\Models\Article;
+use App\Models\Section;
 use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
-use Illuminate\Support\Str;
 
 class ArticleController extends Controller
 {
@@ -24,7 +24,7 @@ class ArticleController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Article::with(['section']);
+        $query = Article::with(['section', 'issue']);
 
         // Filters
         if ($request->filled('status')) {
@@ -32,7 +32,7 @@ class ArticleController extends Controller
         }
 
         if ($request->filled('author')) {
-            $query->where('author_name', 'like', '%' . $request->author . '%');
+            $query->where('author_name', 'like', '%'.$request->author.'%');
         }
 
         if ($request->filled('date')) {
@@ -53,9 +53,21 @@ class ArticleController extends Controller
     public function store(StoreArticleRequest $request, $section_id = null)
     {
         $data = $request->validated();
-        
+
         // If IDs are passed via route, ensure they are used (though merge in request handles validation)
-        if ($section_id) $data['section_id'] = $section_id;
+        if ($section_id) {
+            $data['section_id'] = $section_id;
+        }
+
+        // If section_id is not provided, use default 'general' section
+        if (empty($data['section_id'])) {
+            $defaultSection = Section::where('slug', 'general')->first();
+            if ($defaultSection) {
+                $data['section_id'] = $defaultSection->id;
+            } else {
+            }
+        }
+
         // issue_id is now optional and not passed via route in this context
         // if ($issue_id) $data['issue_id'] = $issue_id;
 
@@ -74,7 +86,7 @@ class ArticleController extends Controller
 
         return response()->json([
             'message' => 'Article created successfully',
-            'article' => $article
+            'article' => $article,
         ], 201);
     }
 
@@ -83,12 +95,12 @@ class ArticleController extends Controller
      */
     public function show($id)
     {
-        $article = Article::with(['section'])->findOrFail($id);
+        $article = Article::with(['section', 'issue'])->findOrFail($id);
 
         // Get visited articles from cookie
         $visitedArticles = json_decode(Cookie::get('visited_articles', '[]'), true);
 
-        if (!in_array($article->id, $visitedArticles)) {
+        if (! in_array($article->id, $visitedArticles)) {
             // Increment views
             $article->increment('views_count');
 
@@ -113,8 +125,15 @@ class ArticleController extends Controller
         $data = $request->validated();
         $user = $request->user();
 
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if (array_key_exists('section_id', $data) && empty($data['section_id'])) {
+            $defaultSection = Section::where('slug', 'general')->first();
+            if ($defaultSection) {
+                $data['section_id'] = $defaultSection->id;
+            }
         }
 
         // Handle Image Upload
@@ -134,7 +153,7 @@ class ArticleController extends Controller
 
         return response()->json([
             'message' => 'Article updated successfully',
-            'article' => $article
+            'article' => $article,
         ]);
     }
 
@@ -145,14 +164,14 @@ class ArticleController extends Controller
     {
         $user = $request->user();
 
-        if (!$user->isAdmin() && !$user->isAuthor()) {
+        if (! $user->isAdmin() && ! $user->isAuthor()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $article->delete(); // Soft delete because of SoftDeletes trait
 
         return response()->json([
-            'message' => 'Article deleted successfully'
+            'message' => 'Article deleted successfully',
         ]);
     }
 }

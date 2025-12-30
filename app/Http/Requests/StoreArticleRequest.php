@@ -20,10 +20,13 @@ class StoreArticleRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'section_id' => $this->route('section'),
-            // 'issue_id' => $this->route('issue'),
-        ]);
+        $section = $this->route('section');
+
+        if ($section) {
+            $this->merge([
+                'section_id' => $section instanceof \App\Models\Section ? $section->id : $section,
+            ]);
+        }
     }
 
     /**
@@ -34,8 +37,8 @@ class StoreArticleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'section_id' => 'required|exists:sections,id',
-            // 'issue_id' => 'nullable|exists:issues,id',
+            'section_id' => 'nullable|exists:sections,id',
+            'issue_id' => 'nullable|exists:issues,id',
             'title' => 'required|string|max:255',
             'slug' => 'required|string|unique:articles,slug|max:255',
             'excerpt' => 'nullable|string',

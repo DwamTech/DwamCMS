@@ -3,6 +3,8 @@
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -16,11 +18,26 @@ return Application::configure(basePath: dirname(__DIR__))
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \App\Http\Middleware\EnsureVisitorCookie::class,
         ]);
-        
+
         $middleware->alias([
             'admin' => \App\Http\Middleware\CheckAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (BadRequestHttpException $e, Request $request) {
+            if (! $request->is('api/*') && ! $request->expectsJson()) {
+                return null;
+            }
+
+            $contentType = strtolower((string) $request->header('Content-Type', ''));
+            $message = 'Bad request.';
+
+            if (str_starts_with($contentType, 'multipart/form-data') && ! str_contains($contentType, 'boundary=')) {
+                $message = 'Invalid multipart/form-data: missing boundary.';
+            } elseif (str_contains($contentType, 'application/json')) {
+                $message = 'Invalid JSON in request body.';
+            }
+
+            return response()->json(['message' => $message], 400);
+        });
     })->create();

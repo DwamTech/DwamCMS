@@ -23,8 +23,8 @@ class UpdateArticleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'section_id' => 'sometimes|exists:sections,id',
-            // 'issue_id' => 'nullable|exists:issues,id',
+            'section_id' => 'sometimes|nullable|exists:sections,id',
+            'issue_id' => 'sometimes|nullable|exists:issues,id',
             'title' => 'sometimes|string|max:255',
             'slug' => ['sometimes', 'string', 'max:255', Rule::unique('articles', 'slug')->ignore($this->route('article'))],
             'excerpt' => 'nullable|string',

@@ -8,6 +8,8 @@ use App\Http\Requests\UpdateVisualRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+use App\Models\Section;
+
 class VisualController extends Controller
 {
     /**
@@ -41,6 +43,14 @@ class VisualController extends Controller
     {
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
+
+        // If section_id is not provided, use default 'general' section
+        if (empty($data['section_id'])) {
+            $defaultSection = Section::where('slug', 'general')->first();
+            if ($defaultSection) {
+                $data['section_id'] = $defaultSection->id;
+            }
+        }
 
         // Handle File Upload
         if ($request->hasFile('file') && $data['type'] === 'upload') {

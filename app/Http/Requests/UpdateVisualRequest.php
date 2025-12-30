@@ -14,6 +14,20 @@ class UpdateVisualRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation()
+    {
+        if ($this->has('section_id') && !is_numeric($this->section_id) && !empty($this->section_id)) {
+            $section = \App\Models\Section::where('name', $this->section_id)->first();
+            if ($section) {
+                $this->merge(['section_id' => $section->id]);
+            } else {
+                // If section not found by name, set to null (will be handled by controller to use default)
+                // or remove it to avoid validation error if it's strict
+                $this->merge(['section_id' => null]);
+            }
+        }
+    }
+
     /**
      * Get the validation rules that apply to the request.
      *
@@ -22,13 +36,13 @@ class UpdateVisualRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'section_id' => 'sometimes|exists:sections,id',
+            'section_id' => 'nullable|exists:sections,id',
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
             'type' => 'sometimes|in:upload,link',
-            'file' => 'nullable|file|mimes:mp4,mov,ogg,qt|max:50000',
+            'file' => 'nullable',
             'url' => 'nullable|url',
-            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'thumbnail' => 'nullable|image',
             'keywords' => 'nullable|string',
             'rating' => 'nullable|numeric|min:0|max:5',
         ];
