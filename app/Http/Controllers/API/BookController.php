@@ -122,4 +122,61 @@ class BookController extends Controller
 
         return response()->json(['message' => 'تم إضافة الكتاب بنجاح', 'data' => $book], 201);
     }
+
+    // Admin: Update Book
+    public function update(Request $request, $id)
+    {
+        $book = Book::find($id);
+        if (!$book) {
+            return response()->json(['message' => 'الكتاب غير موجود'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'title' => 'string|max:255',
+            'description' => 'string',
+            'source_type' => 'in:file,link,embed',
+            'file_path' => 'nullable|file|mimes:pdf,doc,docx,epub|max:51200',
+            'source_link' => 'nullable|string',
+            'cover_type' => 'in:auto,upload',
+            'cover_path' => 'nullable|image|max:5120',
+            'keywords' => 'nullable|array',
+            'author_name' => 'string|max:255',
+            'type' => 'in:single,part',
+            'book_series_id' => 'nullable|exists:book_series,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $data = $validator->validated();
+
+        // Handle File Update
+        if ($request->hasFile('file_path')) {
+            // Delete old file if exists (optional, good practice)
+            // Storage::disk('public')->delete($book->file_path);
+            $data['file_path'] = $request->file('file_path')->store('books/files', 'public');
+        }
+
+        // Handle Cover Update
+        if ($request->hasFile('cover_path')) {
+             $data['cover_path'] = $request->file('cover_path')->store('books/covers', 'public');
+        }
+
+        $book->update($data);
+
+        return response()->json(['message' => 'تم تحديث بيانات الكتاب بنجاح', 'data' => $book]);
+    }
+
+    // Admin: Delete Book
+    public function destroy($id)
+    {
+        $book = Book::find($id);
+        if (!$book) {
+            return response()->json(['message' => 'الكتاب غير موجود'], 404);
+        }
+
+        $book->delete();
+        return response()->json(['message' => 'تم حذف الكتاب بنجاح']);
+    }
 }

@@ -45,4 +45,16 @@ class FeedbackController extends Controller
 
         return response()->json(['message' => $message], 201);
     }
+
+    // Admin: Delete feedback
+    public function destroy($id)
+    {
+        $feedback = Feedback::find($id);
+        if (!$feedback) {
+            return response()->json(['message' => 'الرسالة غير موجودة'], 404);
+        }
+
+        $feedback->delete();
+        return response()->json(['message' => 'تم حذف الرسالة بنجاح']);
+    }
 }
