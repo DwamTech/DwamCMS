@@ -59,14 +59,7 @@ class ArticleController extends Controller
             $data['section_id'] = $section_id;
         }
 
-        // If section_id is not provided, use default 'general' section
-        if (empty($data['section_id'])) {
-            $defaultSection = Section::where('slug', 'general')->first();
-            if ($defaultSection) {
-                $data['section_id'] = $defaultSection->id;
-            } else {
-            }
-        }
+
 
         // issue_id is now optional and not passed via route in this context
         // if ($issue_id) $data['issue_id'] = $issue_id;
@@ -129,12 +122,7 @@ class ArticleController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-        if (array_key_exists('section_id', $data) && empty($data['section_id'])) {
-            $defaultSection = Section::where('slug', 'general')->first();
-            if ($defaultSection) {
-                $data['section_id'] = $defaultSection->id;
-            }
-        }
+
 
         // Handle Image Upload
         if ($request->hasFile('featured_image')) {
