@@ -35,7 +35,7 @@ class AuthController extends Controller
 
         return response()->json([
             'user' => new UserResource($user),
-            'token' => $user->createToken('API Token of ' . $user->name)->plainTextToken,
+            'token' => $user->createToken('API Token of '.$user->name)->plainTextToken,
         ]);
     }
 
@@ -52,7 +52,7 @@ class AuthController extends Controller
 
         return response()->json([
             'user' => new UserResource($user),
-            'token' => $user->createToken('API Token of ' . $user->name)->plainTextToken,
+            'token' => $user->createToken('API Token of '.$user->name)->plainTextToken,
         ]);
     }
 
@@ -60,7 +60,7 @@ class AuthController extends Controller
     {
         $request->validated($request->all());
 
-        if (!Auth::attempt($request->only(['email', 'password']))) {
+        if (! Auth::attempt($request->only(['email', 'password']))) {
             return response()->json([
                 'message' => 'Credentials do not match.',
             ], 401);
@@ -70,7 +70,7 @@ class AuthController extends Controller
 
         return response()->json([
             'user' => new UserResource($user),
-            'token' => $user->createToken('API Token of ' . $user->name)->plainTextToken,
+            'token' => $user->createToken('API Token of '.$user->name)->plainTextToken,
         ]);
     }
 
@@ -88,7 +88,7 @@ class AuthController extends Controller
     {
         // $user = $request->user();
         $data = $request->validate([
-            'role' => ['required', 'string', 'in:' . implode(',', [
+            'role' => ['required', 'string', 'in:'.implode(',', [
                 env('ADMIN', 'admin'),
                 env('EDITOR', 'editor'),
                 env('AUTHOR', 'author'),
@@ -97,7 +97,7 @@ class AuthController extends Controller
             ])],
         ]);
         // $user->role = $request->role;
-        if ( $request->user()->role !== env('ADMIN', 'admin')) {
+        if ($request->user()->role !== env('ADMIN', 'admin')) {
             return response()->json([
                 'message' => 'You are not authorized to perform this action.',
             ], 403);
