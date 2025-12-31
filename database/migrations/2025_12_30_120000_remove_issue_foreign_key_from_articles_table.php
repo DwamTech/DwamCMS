@@ -13,15 +13,15 @@ return new class extends Migration
                 return;
             }
 
-            try {
-                $table->dropForeign(['issue_id']);
-            } catch (\Throwable $e) {
-            }
+            // try {
+            //     $table->dropForeign(['issue_id']);
+            // } catch (\Throwable $e) {
+            // }
 
-            try {
-                $table->dropIndex(['issue_id']);
-            } catch (\Throwable $e) {
-            }
+            // try {
+            //     $table->dropIndex(['issue_id']);
+            // } catch (\Throwable $e) {
+            // }
 
             $table->unsignedBigInteger('issue_id')->nullable()->change();
         });

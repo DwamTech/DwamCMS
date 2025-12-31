@@ -89,14 +89,38 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // Route::post('/set-role/{user}', [AuthController::class, 'setRole']);
 
         // Support Settings (Admin Update)
-        Route::post('/support/settings/update', [\App\Http\Controllers\API\SupportSettingController::class, 'update']); 
+        Route::post('/admin/support/settings/update', [\App\Http\Controllers\API\SupportSettingController::class, 'update']);
         
-        // Library Management (Admin)
-        Route::apiResource('library/series', \App\Http\Controllers\API\BookSeriesController::class);
-        Route::apiResource('library/books', \App\Http\Controllers\API\BookController::class);
+        // Individual Support Admin Requests
+        Route::get('/admin/support/individual/requests', [\App\Http\Controllers\API\IndividualSupportRequestController::class, 'index']);
+        Route::get('/admin/support/individual/requests/{id}', [\App\Http\Controllers\API\IndividualSupportRequestController::class, 'show']);
+        Route::post('/admin/support/individual/requests/{id}/update', [\App\Http\Controllers\API\IndividualSupportRequestController::class, 'update']);
+        Route::delete('/admin/support/individual/requests/{id}', [\App\Http\Controllers\API\IndividualSupportRequestController::class, 'destroy']);
 
-        // Feedback Management (Admin)
-        Route::get('feedback', [\App\Http\Controllers\API\FeedbackController::class, 'index']);
+        // Institutional Support Admin Requests
+        Route::get('/admin/support/institutional/requests', [\App\Http\Controllers\API\InstitutionalSupportRequestController::class, 'index']);
+        Route::get('/admin/support/institutional/requests/{id}', [\App\Http\Controllers\API\InstitutionalSupportRequestController::class, 'show']);
+        Route::post('/admin/support/institutional/requests/{id}/update', [\App\Http\Controllers\API\InstitutionalSupportRequestController::class, 'update']);
+        Route::delete('/admin/support/institutional/requests/{id}', [\App\Http\Controllers\API\InstitutionalSupportRequestController::class, 'destroy']);
+        
+        // Feedback Delete
+        Route::delete('admin/feedback/{id}', [\App\Http\Controllers\API\FeedbackController::class, 'destroy']);
+
+        // Library Management (Admin)
+        Route::apiResource('admin/library/series', \App\Http\Controllers\API\BookSeriesController::class);
+        Route::apiResource('admin/library/books', \App\Http\Controllers\API\BookController::class);
+
+        // Feedback Management (Admin Index)
+        Route::get('admin/feedback', [\App\Http\Controllers\API\FeedbackController::class, 'index']);
+
+        // Dashboard & Analytics
+        Route::prefix('admin/dashboard')->group(function() {
+            Route::get('summary', [\App\Http\Controllers\API\DashboardController::class, 'summary']);
+            Route::get('analytics', [\App\Http\Controllers\API\DashboardController::class, 'analytics']);
+        });
+        
+        Route::get('admin/support-requests/recent', [\App\Http\Controllers\API\DashboardController::class, 'recentRequests']);
+        Route::get('admin/notifications/unread-count', [\App\Http\Controllers\API\DashboardController::class, 'unreadNotificationsCount']);
     });
 });
 

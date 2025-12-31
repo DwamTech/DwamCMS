@@ -113,4 +113,73 @@ class IndividualSupportRequestController extends Controller
             'created_at' => $supportRequest->created_at->format('Y-m-d'),
         ], 200);
     }
+
+    // --- Admin Criteria Methods ---
+
+    public function index(Request $request)
+    {
+        $query = IndividualSupportRequest::query();
+
+        if ($request->has('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->has('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('full_name', 'like', "%{$search}%")
+                  ->orWhere('request_number', 'like', "%{$search}%")
+                  ->orWhere('phone_number', 'like', "%{$search}%");
+            });
+        }
+
+        $requests = $query->latest()->paginate(20);
+        return response()->json($requests);
+    }
+
+    public function show($id)
+    {
+        $request = IndividualSupportRequest::find($id);
+        if (!$request) {
+            return response()->json(['message' => 'الطلب غير موجود'], 404);
+        }
+        return response()->json($request);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $supportRequest = IndividualSupportRequest::find($id);
+        if (!$supportRequest) {
+            return response()->json(['message' => 'الطلب غير موجود'], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'status' => 'required|in:pending,accepted,rejected',
+            'rejection_reason' => 'nullable|required_if:status,rejected|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $supportRequest->update([
+            'status' => $request->status,
+            'rejection_reason' => $request->status == 'rejected' ? $request->rejection_reason : null,
+        ]);
+
+        return response()->json(['message' => 'تم تحديث حالة الطلب بنجاح', 'data' => $supportRequest]);
+    }
+
+    public function destroy($id)
+    {
+        $supportRequest = IndividualSupportRequest::find($id);
+        if (!$supportRequest) {
+            return response()->json(['message' => 'الطلب غير موجود'], 404);
+        }
+
+        // Ideally we should delete files too, keeping it simple for now or use observers
+        $supportRequest->delete();
+
+        return response()->json(['message' => 'تم حذف الطلب بنجاح']);
+    }
 }

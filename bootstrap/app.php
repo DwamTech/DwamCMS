@@ -17,10 +17,15 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \App\Http\Middleware\EnsureVisitorCookie::class,
+            \App\Http\Middleware\TrackVisits::class,
         ]);
 
         $middleware->alias([
             'admin' => \App\Http\Middleware\CheckAdmin::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'api/*',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
