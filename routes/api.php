@@ -26,25 +26,40 @@ Route::get('/issues', [IssueController::class, 'index']);
 Route::get('/issues/{id}', [IssueController::class, 'show']);
 
 // Public article routes
-Route::get('/articles', [ArticleController::class, 'index']);
-Route::get('/articles/{id}', [ArticleController::class, 'show'])
-    ->middleware(EnsureVisitorCookie::class);
+Route::middleware('module.status:articles')->group(function () {
+    Route::get('/articles', [ArticleController::class, 'index']);
+    Route::get('/articles/{id}', [ArticleController::class, 'show'])
+        ->middleware(EnsureVisitorCookie::class);
+});
+
 
 // Public visuals routes
-Route::get('/visuals', [VisualController::class, 'index']);
-Route::get('/visuals/{visual}', [VisualController::class, 'show']);
+Route::middleware('module.status:visuals')->group(function () {
+    Route::get('/visuals', [VisualController::class, 'index']);
+    Route::get('/visuals/{visual}', [VisualController::class, 'show']);
+});
+
 
 // Public audios routes
-Route::get('/audios', [AudioController::class, 'index']);
-Route::get('/audios/{audio}', [AudioController::class, 'show']);
+Route::middleware('module.status:audios')->group(function () {
+    Route::get('/audios', [AudioController::class, 'index']);
+    Route::get('/audios/{audio}', [AudioController::class, 'show']);
+});
+
 
 // Public galleries routes
-Route::get('/galleries', [GalleryController::class, 'index']);
-Route::get('/galleries/{gallery}', [GalleryController::class, 'show']);
+Route::middleware('module.status:galleries')->group(function () {
+    Route::get('/galleries', [GalleryController::class, 'index']);
+    Route::get('/galleries/{gallery}', [GalleryController::class, 'show']);
+});
+
 
 // Public links routes
-Route::get('/links', [LinkController::class, 'index']);
-Route::get('/links/{link}', [LinkController::class, 'show']);
+Route::middleware('module.status:links')->group(function () {
+    Route::get('/links', [LinkController::class, 'index']);
+    Route::get('/links/{link}', [LinkController::class, 'show']);
+});
+
 
 // Public Individual Support Routes
 Route::prefix('support/individual')->group(function () {
@@ -159,11 +174,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 // Route::get('admin/feedback', [\App\Http\Controllers\API\FeedbackController::class, 'index']); // Removed
 
 // Public Library Routes
-Route::prefix('library')->group(function() {
-    Route::get('books', [\App\Http\Controllers\API\BookController::class, 'index']);
-    Route::get('books/{id}', [\App\Http\Controllers\API\BookController::class, 'show']);
-    Route::post('books/{id}/rate', [\App\Http\Controllers\API\BookController::class, 'rate']);
+Route::middleware('module.status:library')->group(function () {
+    Route::prefix('library')->group(function() {
+        Route::get('books', [\App\Http\Controllers\API\BookController::class, 'index']);
+        Route::get('books/{id}', [\App\Http\Controllers\API\BookController::class, 'show']);
+        Route::post('books/{id}/rate', [\App\Http\Controllers\API\BookController::class, 'rate']);
+    });
 });
+
 
 // Platform Satisfaction Rating (Public)
 Route::get('/platform-rating', [\App\Http\Controllers\API\PlatformRatingController::class, 'index']);
