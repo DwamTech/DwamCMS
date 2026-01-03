@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BackupController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\IssueController;
+use App\Http\Controllers\LinkController;
 use App\Http\Controllers\SectionController;
 use App\Http\Controllers\VisualController;
 use App\Http\Middleware\EnsureVisitorCookie;
@@ -25,17 +26,26 @@ Route::get('/issues', [IssueController::class, 'index']);
 Route::get('/issues/{id}', [IssueController::class, 'show']);
 
 // Public article routes
-Route::get('/articles', [ArticleController::class, 'index']);
-Route::get('/articles/{id}', [ArticleController::class, 'show'])
-    ->middleware(EnsureVisitorCookie::class);
+Route::middleware('module.status:articles')->group(function () {
+    Route::get('/articles', [ArticleController::class, 'index']);
+    Route::get('/articles/{id}', [ArticleController::class, 'show'])
+        ->middleware(EnsureVisitorCookie::class);
+});
+
 
 // Public visuals routes
-Route::get('/visuals', [VisualController::class, 'index']);
-Route::get('/visuals/{visual}', [VisualController::class, 'show']);
+Route::middleware('module.status:visuals')->group(function () {
+    Route::get('/visuals', [VisualController::class, 'index']);
+    Route::get('/visuals/{visual}', [VisualController::class, 'show']);
+});
+
 
 // Public audios routes
-Route::get('/audios', [AudioController::class, 'index']);
-Route::get('/audios/{audio}', [AudioController::class, 'show']);
+Route::middleware('module.status:audios')->group(function () {
+    Route::get('/audios', [AudioController::class, 'index']);
+    Route::get('/audios/{audio}', [AudioController::class, 'show']);
+});
+
 
 // Public galleries routes
 Route::get('/galleries', [GalleryController::class, 'index']);
@@ -111,6 +121,12 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/galleries', [GalleryController::class, 'store']);
     Route::match(['put', 'post'], '/galleries/{gallery}', [GalleryController::class, 'update']);
     Route::delete('/galleries/{gallery}', [GalleryController::class, 'destroy']);
+
+    // Links Routes
+    Route::post('/links', [LinkController::class, 'store']);
+    Route::match(['put', 'post'], '/links/{link}', [LinkController::class, 'update']);
+    Route::delete('/links/{link}', [LinkController::class, 'destroy']);
+
 
     // Backup Routes (Admin only)
     Route::middleware(['admin'])->group(function () {

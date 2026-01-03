@@ -34,12 +34,7 @@ class GalleryController extends Controller
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
 
-        if (empty($data['section_id'])) {
-            $defaultSection = Section::where('slug', 'general')->first();
-            if ($defaultSection) {
-                $data['section_id'] = $defaultSection->id;
-            }
-        }
+
 
         if ($request->hasFile('image')) {
             $data['cover_image'] = $request->file('image')->store('galleries/covers', 'public');
@@ -71,12 +66,7 @@ class GalleryController extends Controller
     {
         $data = $request->validated();
 
-        if (array_key_exists('section_id', $data) && empty($data['section_id'])) {
-            $defaultSection = Section::where('slug', 'general')->first();
-            if ($defaultSection) {
-                $data['section_id'] = $defaultSection->id;
-            }
-        }
+
 
         if ($request->hasFile('image')) {
             if ($gallery->cover_image) {

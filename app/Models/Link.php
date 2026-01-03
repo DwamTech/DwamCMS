@@ -2,22 +2,21 @@
 
 namespace App\Models;
 
+use App\Traits\HasDefaultSection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\HasDefaultSection;
 
-
-class Gallery extends Model
+class Link extends Model
 {
     use HasFactory, HasDefaultSection;
-
 
     protected $fillable = [
         'section_id',
         'user_id',
-        'name',
+        'title',
         'description',
-        'cover_image',
+        'url',
+        'image_path',
         'keywords',
         'views_count',
         'rating',
@@ -30,14 +29,17 @@ class Gallery extends Model
         'user_id' => 'integer',
     ];
 
-    public function getCoverImageAttribute($value)
+    /**
+     * Get the full URL for the image path.
+     */
+    public function getImagePathAttribute($value)
     {
         if ($value) {
             if (str_starts_with($value, 'http://') || str_starts_with($value, 'https://')) {
                 return $value;
             }
 
-            return asset('storage/'.$value);
+            return asset('storage/' . $value);
         }
 
         return null;
@@ -51,10 +53,5 @@ class Gallery extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function images()
-    {
-        return $this->hasMany(GalleryImage::class)->orderBy('sort_order');
     }
 }

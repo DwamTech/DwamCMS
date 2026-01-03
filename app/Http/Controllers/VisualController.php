@@ -43,13 +43,7 @@ class VisualController extends Controller
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
 
-        // If section_id is not provided, use default 'general' section
-        if (empty($data['section_id'])) {
-            $defaultSection = Section::where('slug', 'general')->first();
-            if ($defaultSection) {
-                $data['section_id'] = $defaultSection->id;
-            }
-        }
+
 
         // Handle File Upload
         if ($request->hasFile('file') && $data['type'] === 'upload') {
@@ -89,12 +83,7 @@ class VisualController extends Controller
     {
         $data = $request->validated();
 
-        if (array_key_exists('section_id', $data) && empty($data['section_id'])) {
-            $defaultSection = Section::where('slug', 'general')->first();
-            if ($defaultSection) {
-                $data['section_id'] = $defaultSection->id;
-            }
-        }
+
 
         // Handle File Upload
         if ($request->hasFile('file') && isset($data['type']) && $data['type'] === 'upload') {
