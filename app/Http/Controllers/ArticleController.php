@@ -82,6 +82,35 @@ class ArticleController extends Controller
             );
         }
 
+        // Check for scheduled publishing
+        // Logic:
+        // 1. If published_at is SET and FUTURE -> Scheduled (Draft)
+        // 2. If published_at is EMPTY, check gregorian_date.
+        //    If gregorian_date is FUTURE -> Copy to published_at -> Scheduled (Draft)
+        // 3. If publishing immediately (status=published) and no future date -> Ensure published_at = now()
+
+        if (isset($data['published_at'])) {
+            if (\Carbon\Carbon::parse($data['published_at'])->isFuture() && $data['status'] === 'published') {
+                $data['status'] = 'draft';
+            }
+        } elseif (isset($data['gregorian_date'])) {
+            // Check if gregorian_date is a valid future date
+            try {
+                $gDate = \Carbon\Carbon::parse($data['gregorian_date']);
+                if ($gDate->isFuture() && $data['status'] === 'published') {
+                    $data['published_at'] = $gDate;
+                    $data['status'] = 'draft';
+                }
+            } catch (\Exception $e) {
+                // Ignore invalid date strings
+            }
+        }
+
+        // If still published but no published_at, set to now
+        if ($data['status'] === 'published' && empty($data['published_at'])) {
+            $data['published_at'] = now();
+        }
+
         $article = Article::create($data);
 
         return response()->json([
@@ -149,6 +178,33 @@ class ArticleController extends Controller
             );
         }
 
+
+
+        // Check for scheduled publishing
+        if (isset($data['published_at'])) {
+             if (\Carbon\Carbon::parse($data['published_at'])->isFuture()) {
+                if (isset($data['status']) && $data['status'] === 'published') {
+                    $data['status'] = 'draft';
+                }
+             }
+        } elseif (isset($data['gregorian_date'])) {
+             try {
+                $gDate = \Carbon\Carbon::parse($data['gregorian_date']);
+                // Only if trying to publish
+                if ($gDate->isFuture() && isset($data['status']) && $data['status'] === 'published') {
+                    $data['published_at'] = $gDate;
+                    $data['status'] = 'draft';
+                }
+             } catch (\Exception $e) { }
+        }
+
+        // Maintain published_at consistency
+        if (isset($data['status']) && $data['status'] === 'published') {
+            if (empty($data['published_at']) && !$article->published_at) {
+                $data['published_at'] = now();
+            }
+        }
+
         $article->update($data);
 
         return response()->json([
@@ -173,5 +229,48 @@ class ArticleController extends Controller
         return response()->json([
             'message' => 'Article deleted successfully',
         ]);
+    }
+
+    /**
+     * Toggle the status of the specified article (draft <-> published).
+     */
+    public function toggleStatus(Request $request, Article $article)
+    {
+        $user = $request->user();
+        if (!$user->isAdmin()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $newStatus = $article->status === 'published' ? 'draft' : 'published';
+        
+        $data = ['status' => $newStatus];
+        
+        // If publishing, forcing published_at to now() as requested
+        if ($newStatus === 'published') {
+            $data['published_at'] = now();
+            $data['gregorian_date'] = now()->toDateString(); // Also update the display date
+        }
+
+        $article->update($data);
+
+        return response()->json([
+            'message' => 'Article status updated successfully',
+            'status' => $newStatus,
+            'article' => $article
+        ]);
+    }
+
+    /**
+     * Get a list of distinct internal authors.
+     */
+    public function getAuthors(Request $request)
+    {
+        $authors = Article::select('author_name')
+            ->distinct()
+            ->whereNotNull('author_name')
+            ->orderBy('author_name')
+            ->pluck('author_name');
+
+        return response()->json($authors);
     }
 }

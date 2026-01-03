@@ -81,16 +81,16 @@ class BookController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'title' => 'required|string|max:255',
+            'title' => 'required|string|max:1048576',
             'description' => 'required|string',
             'source_type' => 'required|in:file,link,embed',
             // if file -> file required. if link/embed -> source_link required
-            'file_path' => 'nullable|required_if:source_type,file|file|mimes:pdf,doc,docx,epub|max:51200', // 50MB
+            'file_path' => 'nullable|required_if:source_type,file|file|mimes:pdf,doc,docx,epub|max:1048576', // 50MB
             'source_link' => 'nullable|required_if:source_type,link,embed|string',
             'cover_type' => 'required|in:auto,upload',
-            'cover_path' => 'nullable|required_if:cover_type,upload|image|max:5120',
+            'cover_path' => 'nullable|required_if:cover_type,upload|image|max:1048576',
             'keywords' => 'nullable|array',
-            'author_name' => 'required|string|max:255',
+            'author_name' => 'required|string|max:1048576',
             'type' => 'required|in:single,part',
             'book_series_id' => 'nullable|required_if:type,part|exists:book_series,id',
         ]);
@@ -132,15 +132,15 @@ class BookController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'title' => 'string|max:255',
+            'title' => 'string|max:1048576',
             'description' => 'string',
             'source_type' => 'in:file,link,embed',
-            'file_path' => 'nullable|file|mimes:pdf,doc,docx,epub|max:51200',
+            'file_path' => 'nullable|file|mimes:pdf,doc,docx,epub|max:1048576',
             'source_link' => 'nullable|string',
             'cover_type' => 'in:auto,upload',
-            'cover_path' => 'nullable|image|max:5120',
+            'cover_path' => 'nullable|image|max:1048576',
             'keywords' => 'nullable|array',
-            'author_name' => 'string|max:255',
+            'author_name' => 'string|max:1048576',
             'type' => 'in:single,part',
             'book_series_id' => 'nullable|exists:book_series,id',
         ]);
@@ -178,5 +178,17 @@ class BookController extends Controller
 
         $book->delete();
         return response()->json(['message' => 'تم حذف الكتاب بنجاح']);
+    }
+
+    // Admin: Get Distinct Authors
+    public function getAuthors(Request $request)
+    {
+        $authors = Book::select('author_name')
+            ->distinct()
+            ->whereNotNull('author_name')
+            ->orderBy('author_name')
+            ->pluck('author_name');
+
+        return response()->json($authors);
     }
 }

@@ -58,6 +58,16 @@ class SectionsSeeder extends Seeder
                 'slug' => 'library',
                 'description' => 'مكتبة العدد (مؤلفات مفيدة)',
             ],
+            [
+                'name' => 'اللوائح',
+                'slug' => 'regulations',
+                'description' => 'اللوائح التنظيمية',
+            ],
+            [
+                'name' => 'أخبار الوقف',
+                'slug' => 'waqf-news',
+                'description' => 'أخبار ومستجدات الوقف',
+            ],
         ];
 
         foreach ($sections as $section) {

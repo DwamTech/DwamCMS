@@ -18,7 +18,7 @@ class BookSeriesController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:1048576',
             'description' => 'nullable|string',
         ]);
 
@@ -48,7 +48,7 @@ class BookSeriesController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'name' => 'string|max:255',
+            'name' => 'string|max:1048576',
             'description' => 'nullable|string',
         ]);
 

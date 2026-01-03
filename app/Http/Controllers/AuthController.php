@@ -109,4 +109,14 @@ class AuthController extends Controller
             'message' => 'Role updated successfully.',
         ]);
     }
+
+    // Validate Token Method
+    public function validateToken(Request $request)
+    {
+        return response()->json([
+            'valid' => true,
+            'user' => $request->user(),
+            'message' => 'Token is valid'
+        ]);
+    }
 }

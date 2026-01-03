@@ -26,9 +26,11 @@ class FeedbackController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255',
+            'name' => 'required|string|max:1048576',
+            'email' => 'required|email|max:1048576',
+            'phone_number' => 'nullable|string|max:20',
             'message' => 'required|string',
+            'attachment_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:1048576', // 5MB max
             'type' => 'required|in:suggestion,complaint',
         ]);
 
@@ -36,7 +38,13 @@ class FeedbackController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        Feedback::create($validator->validated());
+        $data = $validator->validated();
+
+        if ($request->hasFile('attachment_path')) {
+            $data['attachment_path'] = $request->file('attachment_path')->store('feedback_attachments', 'public');
+        }
+
+        Feedback::create($data);
 
         // Custom message based on type
         $message = $request->type == 'complaint' 
