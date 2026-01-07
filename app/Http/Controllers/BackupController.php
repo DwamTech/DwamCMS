@@ -86,6 +86,77 @@ class BackupController extends Controller
     }
 
     /**
+     * حذف نسخة احتياطية.
+     */
+    public function delete(Request $request)
+    {
+        $fileName = (string) $request->input('file_name');
+
+        if (! $fileName) {
+            return response()->json(['message' => 'File name is required'], 400);
+        }
+
+        // التحقق من صحة اسم الملف (منع Path Traversal)
+        if ($fileName !== basename($fileName) || str_contains($fileName, '..') || str_contains($fileName, '/') || str_contains($fileName, '\\')) {
+            return response()->json(['message' => 'Invalid file name'], 422);
+        }
+
+        $backupDisk = Storage::disk('local');
+        $appName = config('backup.backup.name');
+        $filePath = $appName.'/'.$fileName;
+
+        // التحقق من وجود الملف
+        if (! $backupDisk->exists($filePath)) {
+            // محاولة البحث في الجذر
+            if ($backupDisk->exists($fileName)) {
+                $filePath = $fileName;
+            } else {
+                return response()->json(['message' => 'Backup file not found'], 404);
+            }
+        }
+
+        try {
+            // الحصول على حجم الملف قبل الحذف
+            $fileSize = $backupDisk->size($filePath);
+
+            // حذف الملف
+            $backupDisk->delete($filePath);
+
+            // تسجيل عملية الحذف
+            BackupHistory::create([
+                'type' => 'delete',
+                'status' => 'success',
+                'file_name' => $fileName,
+                'file_size' => $fileSize,
+                'message' => 'Backup deleted successfully.',
+                'user_id' => $request->user() ? $request->user()->id : null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Backup deleted successfully.',
+                'file_name' => $fileName,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Backup delete failed: '.$e->getMessage());
+
+            BackupHistory::create([
+                'type' => 'delete',
+                'status' => 'failed',
+                'file_name' => $fileName,
+                'message' => 'Failed to delete backup: '.$e->getMessage(),
+                'user_id' => $request->user() ? $request->user()->id : null,
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete backup.',
+            ], 500);
+        }
+    }
+
+    /**
      * إنشاء نسخة احتياطية يدوياً.
      */
     /**

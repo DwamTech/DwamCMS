@@ -23,6 +23,7 @@ return [
         env('FRONTEND_URL', 'http://localhost:3000'),
         'http://localhost:3000', // Explicit fallback
         'http://127.0.0.1:3000',
+        'http://192.168.119.1:3000',
     ],
 
     'allowed_origins_patterns' => [],

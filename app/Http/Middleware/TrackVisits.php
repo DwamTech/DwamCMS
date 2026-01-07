@@ -4,6 +4,8 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Response;
 
 class TrackVisits
@@ -44,11 +46,20 @@ class TrackVisits
         $response = $next($request);
 
         // Set cookies if unique or new day
+        // Use Cookie::queue() for BinaryFileResponse (downloads) since withCookie() is not supported
         if ($isUnique) {
-             $response->withCookie(cookie()->forever('visitor_id', \Illuminate\Support\Str::uuid()));
-             $response->withCookie(cookie()->forever('last_visit_date', $today));
+            if ($response instanceof BinaryFileResponse) {
+                // For file downloads, use Cookie::queue() instead
+                Cookie::queue(cookie()->forever('visitor_id', \Illuminate\Support\Str::uuid()));
+                Cookie::queue(cookie()->forever('last_visit_date', $today));
+            } else {
+                // For regular responses, use withCookie()
+                $response->withCookie(cookie()->forever('visitor_id', \Illuminate\Support\Str::uuid()));
+                $response->withCookie(cookie()->forever('last_visit_date', $today));
+            }
         }
 
         return $response;
     }
 }
+

@@ -121,6 +121,7 @@ class InstitutionalSupportRequestController extends Controller
         return response()->json([
             'status' => $requestObj->status,
             'rejection_reason' => $requestObj->rejection_reason,
+            'admin_response_message' => $requestObj->admin_response_message, // Field for generic admin messages
             'created_at' => $requestObj->created_at->format('Y-m-d'),
         ], 200);
     }
@@ -176,10 +177,16 @@ class InstitutionalSupportRequestController extends Controller
 
         $updateData = [
             'status' => $request->status,
-            'rejection_reason' => $request->status == 'rejected' ? $request->rejection_reason : null,
         ];
 
-        if ($request->has('admin_response_message')) {
+        // Save rejection_reason if provided (e.g. for rejected OR waiting_for_documents)
+        if ($request->has('rejection_reason')) {
+            $updateData['rejection_reason'] = $request->rejection_reason;
+        } elseif ($request->status == 'rejected') {
+             $updateData['rejection_reason'] = $request->rejection_reason;
+        }
+
+        if ($request->has('admin_response_message') || isset($request->admin_response_message)) {
             $updateData['admin_response_message'] = $request->admin_response_message;
         }
 

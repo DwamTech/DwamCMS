@@ -72,6 +72,14 @@ Route::get('support/settings', [\App\Http\Controllers\API\SupportSettingControll
 // Public System Content
 Route::get('system-content/{key}', [\App\Http\Controllers\API\SystemContentController::class, 'show']);
 
+// Public Site Contact (Guest endpoints)
+Route::prefix('site-contact')->group(function () {
+    Route::get('/', [\App\Http\Controllers\API\SiteContactController::class, 'index']);
+    Route::get('/social', [\App\Http\Controllers\API\SiteContactController::class, 'social']);
+    Route::get('/phones', [\App\Http\Controllers\API\SiteContactController::class, 'phones']);
+    Route::get('/business', [\App\Http\Controllers\API\SiteContactController::class, 'business']);
+});
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
     // ... existing auth routes
     // System Content Management (Admin)
@@ -136,6 +144,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/backups/download', [BackupController::class, 'download'])->name('backup.download');
         Route::post('/backups/create', [BackupController::class, 'create']);
         Route::post('/backups/restore', [BackupController::class, 'restore']);
+        Route::delete('/backups/delete', [BackupController::class, 'delete']);
         // Route::post('/register', [AuthController::class, 'register']);
 
         // Route::post('/set-role/{user}', [AuthController::class, 'setRole']);
@@ -201,6 +210,30 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('/sections', [SectionController::class, 'store']);
         Route::put('/sections/{section}', [SectionController::class, 'update']);
         Route::delete('/sections/{section}', [SectionController::class, 'destroy']);
+
+        // Site Contact Management (Admin)
+        Route::prefix('admin/site-contact')->group(function () {
+            Route::get('/', [\App\Http\Controllers\API\SiteContactController::class, 'show']);
+            Route::put('/', [\App\Http\Controllers\API\SiteContactController::class, 'update']);
+            Route::put('/social', [\App\Http\Controllers\API\SiteContactController::class, 'updateSocial']);
+            Route::put('/phones', [\App\Http\Controllers\API\SiteContactController::class, 'updatePhones']);
+            Route::put('/business', [\App\Http\Controllers\API\SiteContactController::class, 'updateBusiness']);
+        });
+
+        // Admin Notifications
+        Route::prefix('admin/notifications')->group(function () {
+            Route::get('/', [\App\Http\Controllers\API\AdminNotificationController::class, 'index']);
+            Route::get('/count', [\App\Http\Controllers\API\AdminNotificationController::class, 'count']);
+            Route::get('/latest', [\App\Http\Controllers\API\AdminNotificationController::class, 'latest']);
+            Route::get('/meta', [\App\Http\Controllers\API\AdminNotificationController::class, 'meta']);
+            Route::get('/{id}', [\App\Http\Controllers\API\AdminNotificationController::class, 'show']);
+            Route::post('/{id}/read', [\App\Http\Controllers\API\AdminNotificationController::class, 'markAsRead']);
+            Route::post('/{id}/unread', [\App\Http\Controllers\API\AdminNotificationController::class, 'markAsUnread']);
+            Route::post('/read-all', [\App\Http\Controllers\API\AdminNotificationController::class, 'markAllAsRead']);
+            Route::delete('/{id}', [\App\Http\Controllers\API\AdminNotificationController::class, 'destroy']);
+            Route::delete('/clear-read', [\App\Http\Controllers\API\AdminNotificationController::class, 'clearRead']);
+            Route::delete('/clear-all', [\App\Http\Controllers\API\AdminNotificationController::class, 'clearAll']);
+        });
     });
 });
 
