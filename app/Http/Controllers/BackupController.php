@@ -530,4 +530,53 @@ class BackupController extends Controller
             return response()->json(['message' => 'Failed to upload backup.'], 500);
         }
     }
+
+    /**
+     * حذف ملف نسخة احتياطية.
+     */
+    public function destroy(Request $request)
+    {
+        $fileName = $request->input('file_name');
+
+        if (! $fileName) {
+            return response()->json(['message' => 'File name is required'], 400);
+        }
+
+        $backupDisk = Storage::disk('local');
+        $appName = config('backup.backup.name');
+        $filePath = $appName.'/'.$fileName;
+
+        if (! $backupDisk->exists($filePath)) {
+            // محاولة البحث في الجذر أيضاً
+            if ($backupDisk->exists($fileName)) {
+                $filePath = $fileName;
+            } else {
+                return response()->json(['message' => 'Backup file not found'], 404);
+            }
+        }
+
+        try {
+            // حذف الملف
+            $backupDisk->delete($filePath);
+
+            // تسجيل في السجل
+            BackupHistory::create([
+                'type' => 'clean',
+                'status' => 'success',
+                'file_name' => $fileName,
+                'message' => 'Backup file deleted manually.',
+                'user_id' => $request->user() ? $request->user()->id : null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Backup file deleted successfully.',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Backup deletion failed: '.$e->getMessage());
+
+            return response()->json(['message' => 'Failed to delete backup.'], 500);
+        }
+    }
 }
