@@ -19,34 +19,34 @@ class IndividualSupportRequestController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'full_name' => 'required|string|max:255',
+            'full_name' => 'required|string|max:1048576',
             'gender' => 'required|in:male,female',
-            'nationality' => 'required|string|max:255',
-            'city' => 'required|string|max:255',
-            'housing_type' => 'required|string|max:255',
-            'housing_type_other' => 'nullable|required_if:housing_type,أخرى,other|string|max:255',
-            'identity_image_path' => 'required|file|image|max:5120', // 5MB max
+            'nationality' => 'required|string|max:1048576',
+            'city' => 'required|string|max:1048576',
+            'housing_type' => 'required|string|max:1048576',
+            'housing_type_other' => 'nullable|required_if:housing_type,أخرى,other|string|max:1048576',
+            'identity_image_path' => 'required|file|image|max:1048576', // 5MB max
             'birth_date' => 'required|date',
             'identity_expiry_date' => 'required|date',
             'phone_number' => 'required|string|max:20',
             'whatsapp_number' => 'required|string|max:20',
-            'email' => 'required|email|max:255',
-            'academic_qualification_path' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'scientific_activity' => 'required|string|max:255',
-            'scientific_activity_other' => 'nullable|required_if:scientific_activity,أخرى,other|string|max:255',
-            'cv_path' => 'required|file|mimes:pdf,doc,docx|max:5120',
-            'workplace' => 'required|string|max:255',
+            'email' => 'required|email|max:1048576',
+            'academic_qualification_path' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1048576',
+            'scientific_activity' => 'required|string|max:1048576',
+            'scientific_activity_other' => 'nullable|required_if:scientific_activity,أخرى,other|string|max:1048576',
+            'cv_path' => 'required|file|mimes:pdf,doc,docx|max:1048576',
+            'workplace' => 'required|string|max:1048576',
             'support_scope' => 'required|in:full,partial',
             'amount_requested' => 'required|numeric|min:0',
-            'support_type' => 'required|string|max:255',
-            'support_type_other' => 'nullable|required_if:support_type,أخرى,other|string|max:255',
+            'support_type' => 'required|string|max:1048576',
+            'support_type_other' => 'nullable|required_if:support_type,أخرى,other|string|max:1048576',
             'has_income' => 'required|boolean', // 0 or 1, true or false
-            'income_source' => 'nullable|required_if:has_income,true,1|string|max:255',
+            'income_source' => 'nullable|required_if:has_income,true,1|string|max:1048576',
             'marital_status' => 'required|in:single,married',
             'family_members_count' => 'nullable|required_if:marital_status,married|integer|min:0',
-            'recommendation_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'recommendation_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:1048576',
             'bank_account_iban' => 'required|string|max:50',
-            'bank_name' => 'required|string|max:100',
+            'bank_name' => 'required|string|max:1048576',
         ]);
 
         if ($validator->fails()) {
@@ -73,7 +73,11 @@ class IndividualSupportRequestController extends Controller
             }
 
             // Generate Request Number (e.g., SUP-YYYY-RANDOM)
-            $data['request_number'] = 'SUP-' . date('Y') . '-' . strtoupper(Str::random(6));
+            // Generate Sequential Request Number (0000, 0001, ...)
+            $lastRequest = IndividualSupportRequest::latest('id')->first();
+            $nextId = $lastRequest ? $lastRequest->id + 1 : 1;
+            // Pad with zeros, ensuring at least 4 digits, but expanding if larger (e.g., 10000)
+            $data['request_number'] = str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
             $supportRequest = IndividualSupportRequest::create($data);
 
@@ -110,6 +114,7 @@ class IndividualSupportRequestController extends Controller
         return response()->json([
             'status' => $supportRequest->status,
             'rejection_reason' => $supportRequest->rejection_reason,
+            'admin_response_message' => $supportRequest->admin_response_message, // Field for generic admin messages
             'created_at' => $supportRequest->created_at->format('Y-m-d'),
         ], 200);
     }
@@ -154,18 +159,33 @@ class IndividualSupportRequestController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:pending,accepted,rejected',
+            'status' => 'required|in:pending,waiting_for_documents,documents_review,completed,rejected,archived',
             'rejection_reason' => 'nullable|required_if:status,rejected|string',
+            'admin_response_message' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $supportRequest->update([
+        $updateData = [
             'status' => $request->status,
-            'rejection_reason' => $request->status == 'rejected' ? $request->rejection_reason : null,
-        ]);
+        ];
+
+        // Save rejection_reason if provided (e.g. for rejected OR waiting_for_documents)
+        if ($request->has('rejection_reason')) {
+            $updateData['rejection_reason'] = $request->rejection_reason;
+        } elseif ($request->status == 'rejected') {
+            // This case should be covered by has('rejection_reason'), 
+            // but just in case it was explicitly null in some edge case context not handled by 'has'
+             $updateData['rejection_reason'] = $request->rejection_reason;
+        }
+
+        if ($request->has('admin_response_message') || isset($request->admin_response_message)) {
+            $updateData['admin_response_message'] = $request->admin_response_message;
+        }
+
+        $supportRequest->update($updateData);
 
         return response()->json(['message' => 'تم تحديث حالة الطلب بنجاح', 'data' => $supportRequest]);
     }

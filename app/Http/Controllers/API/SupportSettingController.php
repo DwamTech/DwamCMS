@@ -48,5 +48,31 @@ class SupportSettingController extends Controller
 
         return response()->json(['message' => 'تم تحديث الإعدادات بنجاح']);
     }
+    // Admin: Update All Settings
+    public function updateAll(Request $request)
+    {
+        // Handle GET Request: Return current status
+        if ($request->isMethod('get')) {
+            return $this->index();
+        }
 
+        $validator = Validator::make($request->all(), [
+            'value' => 'required|in:true,false',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $keys = ['individual_support_enabled', 'institutional_support_enabled'];
+
+        foreach ($keys as $key) {
+            SupportSetting::updateOrCreate(
+                ['key' => $key],
+                ['value' => $request->value]
+            );
+        }
+
+        return response()->json(['message' => 'تم تحديث جميع إعدادات الدعم بنجاح']);
+    }
 }

@@ -48,18 +48,8 @@ Route::middleware('module.status:audios')->group(function () {
 
 
 // Public galleries routes
-Route::middleware('module.status:galleries')->group(function () {
-    Route::get('/galleries', [GalleryController::class, 'index']);
-    Route::get('/galleries/{gallery}', [GalleryController::class, 'show']);
-});
-
-
-// Public links routes
-Route::middleware('module.status:links')->group(function () {
-    Route::get('/links', [LinkController::class, 'index']);
-    Route::get('/links/{link}', [LinkController::class, 'show']);
-});
-
+Route::get('/galleries', [GalleryController::class, 'index']);
+Route::get('/galleries/{gallery}', [GalleryController::class, 'show']);
 
 // Public Individual Support Routes
 Route::prefix('support/individual')->group(function () {
@@ -73,15 +63,38 @@ Route::prefix('support/institutional')->group(function () {
     Route::post('status', [\App\Http\Controllers\API\InstitutionalSupportRequestController::class, 'checkStatus']);
 });
 
+// Public Workflow (Client Response)
+Route::post('support/workflow/upload', [\App\Http\Controllers\API\WorkflowController::class, 'uploadDocuments']);
+
 // Support Settings (Public)
 Route::get('support/settings', [\App\Http\Controllers\API\SupportSettingController::class, 'index']);
 
+// Public System Content
+Route::get('system-content/{key}', [\App\Http\Controllers\API\SystemContentController::class, 'show']);
+
+// Public Site Contact (Guest endpoints)
+Route::prefix('site-contact')->group(function () {
+    Route::get('/', [\App\Http\Controllers\API\SiteContactController::class, 'index']);
+    Route::get('/social', [\App\Http\Controllers\API\SiteContactController::class, 'social']);
+    Route::get('/phones', [\App\Http\Controllers\API\SiteContactController::class, 'phones']);
+    Route::get('/business', [\App\Http\Controllers\API\SiteContactController::class, 'business']);
+});
 
 Route::group(['middleware' => ['auth:sanctum']], function () {
+    // ... existing auth routes
+    // System Content Management (Admin)
+    Route::post('/admin/system-content/{key}', [\App\Http\Controllers\API\SystemContentController::class, 'update']);
+
     Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/validate-token', [AuthController::class, 'validateToken']);
     Route::get('/user', function (Request $request) {
         return $request->user();
     });
+
+    // Profile Management (All authenticated users)
+    Route::get('/profile', [\App\Http\Controllers\API\UserManagementController::class, 'profile']);
+    Route::put('/profile', [\App\Http\Controllers\API\UserManagementController::class, 'updateProfile']);
+
 
     // Protected issue routes
     Route::post('/issues', [IssueController::class, 'store']);
@@ -98,6 +111,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // Route::post('/articles', [ArticleController::class, 'store']);
 
     Route::match(['put', 'post'], '/articles/{article}', [ArticleController::class, 'update']);
+    Route::post('/articles/{article}/toggle-status', [ArticleController::class, 'toggleStatus']);
     Route::delete('/articles/{article}', [ArticleController::class, 'destroy']);
 
     // Visuals Routes
@@ -137,6 +151,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         // Support Settings (Admin Update)
         Route::post('/admin/support/settings/update', [\App\Http\Controllers\API\SupportSettingController::class, 'update']);
+        Route::match(['get', 'post'], '/admin/support/settings/update-all', [\App\Http\Controllers\API\SupportSettingController::class, 'updateAll']);
         
         // Individual Support Admin Requests
         Route::get('/admin/support/individual/requests', [\App\Http\Controllers\API\IndividualSupportRequestController::class, 'index']);
@@ -149,13 +164,22 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::get('/admin/support/institutional/requests/{id}', [\App\Http\Controllers\API\InstitutionalSupportRequestController::class, 'show']);
         Route::post('/admin/support/institutional/requests/{id}/update', [\App\Http\Controllers\API\InstitutionalSupportRequestController::class, 'update']);
         Route::delete('/admin/support/institutional/requests/{id}', [\App\Http\Controllers\API\InstitutionalSupportRequestController::class, 'destroy']);
+
+        // Unified Pending Requests
+        Route::get('/admin/support/pending', [\App\Http\Controllers\API\SupportRequestController::class, 'pending']);
         
         // Feedback Delete
         Route::delete('admin/feedback/{id}', [\App\Http\Controllers\API\FeedbackController::class, 'destroy']);
 
         // Library Management (Admin)
         Route::apiResource('admin/library/series', \App\Http\Controllers\API\BookSeriesController::class);
+        Route::get('admin/library/books/authors', [\App\Http\Controllers\API\BookController::class, 'getAuthors']);
         Route::apiResource('admin/library/books', \App\Http\Controllers\API\BookController::class);
+
+        // Document Management (Admin)
+        Route::apiResource('admin/documents', \App\Http\Controllers\API\DocumentController::class)->except(['index', 'show']);
+
+
 
         // Feedback Management (Admin Index)
         Route::get('admin/feedback', [\App\Http\Controllers\API\FeedbackController::class, 'index']);
@@ -164,10 +188,52 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::prefix('admin/dashboard')->group(function() {
             Route::get('summary', [\App\Http\Controllers\API\DashboardController::class, 'summary']);
             Route::get('analytics', [\App\Http\Controllers\API\DashboardController::class, 'analytics']);
+            Route::get('recent-requests', [\App\Http\Controllers\API\DashboardController::class, 'recentRequests']);
+            Route::get('notifications/count', [\App\Http\Controllers\API\DashboardController::class, 'unreadNotificationsCount']);
+            Route::get('pending-requests-values', [\App\Http\Controllers\API\DashboardController::class, 'pendingRequestsValues']);
+            Route::get('support-stats', [\App\Http\Controllers\API\DashboardController::class, 'supportStats']);
         });
         
-        Route::get('admin/support-requests/recent', [\App\Http\Controllers\API\DashboardController::class, 'recentRequests']);
-        Route::get('admin/notifications/unread-count', [\App\Http\Controllers\API\DashboardController::class, 'unreadNotificationsCount']);
+        
+        // User Management (Admin only)
+        Route::get('admin/users', [\App\Http\Controllers\API\UserManagementController::class, 'index']);
+        Route::get('admin/users/{id}', [\App\Http\Controllers\API\UserManagementController::class, 'show']);
+        Route::post('admin/users', [\App\Http\Controllers\API\UserManagementController::class, 'store']);
+        Route::put('admin/users/{id}', [\App\Http\Controllers\API\UserManagementController::class, 'update']);
+        Route::post('admin/users/{id}/change-password', [\App\Http\Controllers\API\UserManagementController::class, 'changePassword']);
+        Route::delete('admin/users/{id}', [\App\Http\Controllers\API\UserManagementController::class, 'destroy']);
+        
+        // Authors List
+        Route::get('admin/articles/authors', [ArticleController::class, 'getAuthors']);
+
+        // Admin Section Management
+        Route::post('/sections', [SectionController::class, 'store']);
+        Route::put('/sections/{section}', [SectionController::class, 'update']);
+        Route::delete('/sections/{section}', [SectionController::class, 'destroy']);
+
+        // Site Contact Management (Admin)
+        Route::prefix('admin/site-contact')->group(function () {
+            Route::get('/', [\App\Http\Controllers\API\SiteContactController::class, 'show']);
+            Route::put('/', [\App\Http\Controllers\API\SiteContactController::class, 'update']);
+            Route::put('/social', [\App\Http\Controllers\API\SiteContactController::class, 'updateSocial']);
+            Route::put('/phones', [\App\Http\Controllers\API\SiteContactController::class, 'updatePhones']);
+            Route::put('/business', [\App\Http\Controllers\API\SiteContactController::class, 'updateBusiness']);
+        });
+
+        // Admin Notifications
+        Route::prefix('admin/notifications')->group(function () {
+            Route::get('/', [\App\Http\Controllers\API\AdminNotificationController::class, 'index']);
+            Route::get('/count', [\App\Http\Controllers\API\AdminNotificationController::class, 'count']);
+            Route::get('/latest', [\App\Http\Controllers\API\AdminNotificationController::class, 'latest']);
+            Route::get('/meta', [\App\Http\Controllers\API\AdminNotificationController::class, 'meta']);
+            Route::get('/{id}', [\App\Http\Controllers\API\AdminNotificationController::class, 'show']);
+            Route::post('/{id}/read', [\App\Http\Controllers\API\AdminNotificationController::class, 'markAsRead']);
+            Route::post('/{id}/unread', [\App\Http\Controllers\API\AdminNotificationController::class, 'markAsUnread']);
+            Route::post('/read-all', [\App\Http\Controllers\API\AdminNotificationController::class, 'markAllAsRead']);
+            Route::delete('/{id}', [\App\Http\Controllers\API\AdminNotificationController::class, 'destroy']);
+            Route::delete('/clear-read', [\App\Http\Controllers\API\AdminNotificationController::class, 'clearRead']);
+            Route::delete('/clear-all', [\App\Http\Controllers\API\AdminNotificationController::class, 'clearAll']);
+        });
     });
 });
 
@@ -175,14 +241,18 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 // Route::get('admin/feedback', [\App\Http\Controllers\API\FeedbackController::class, 'index']); // Removed
 
 // Public Library Routes
-Route::middleware('module.status:library')->group(function () {
-    Route::prefix('library')->group(function() {
-        Route::get('books', [\App\Http\Controllers\API\BookController::class, 'index']);
-        Route::get('books/{id}', [\App\Http\Controllers\API\BookController::class, 'show']);
-        Route::post('books/{id}/rate', [\App\Http\Controllers\API\BookController::class, 'rate']);
-    });
+Route::prefix('library')->group(function() {
+    Route::get('books', [\App\Http\Controllers\API\BookController::class, 'index']);
+    Route::get('books/{id}', [\App\Http\Controllers\API\BookController::class, 'show']);
+    Route::post('books/{id}/rate', [\App\Http\Controllers\API\BookController::class, 'rate']);
 });
 
+// Public Documents Routes
+Route::prefix('documents')->group(function() {
+    Route::get('/', [\App\Http\Controllers\API\DocumentController::class, 'index']);
+    Route::get('/{id}', [\App\Http\Controllers\API\DocumentController::class, 'show']);
+    Route::post('/{id}/download', [\App\Http\Controllers\API\DocumentController::class, 'download']);
+});
 
 // Platform Satisfaction Rating (Public)
 Route::get('/platform-rating', [\App\Http\Controllers\API\PlatformRatingController::class, 'index']);

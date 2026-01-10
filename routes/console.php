@@ -15,4 +15,8 @@ Schedule::command('backup:run')->cron('0 2 */3 * *');
 Schedule::command('backup:clean')->dailyAt('03:00');
 
 // مراقبة حالة النسخ يومياً الساعة 4 صباحاً
+// مراقبة حالة النسخ يومياً الساعة 4 صباحاً
 Schedule::command('backup:monitor')->dailyAt('04:00');
+
+// Publish scheduled articles check every minute
+Schedule::command('articles:publish-scheduled')->everyMinute();

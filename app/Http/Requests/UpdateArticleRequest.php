@@ -45,7 +45,7 @@ class UpdateArticleRequest extends FormRequest
             'excerpt' => 'nullable|string',
             'content' => 'sometimes|string',
             'author_name' => 'sometimes|string|max:255',
-            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:4096',
+            'featured_image' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:1048576', // 1GB
             'gregorian_date' => 'nullable|string',
             'hijri_date' => 'nullable|string',
             'references' => 'nullable|string',

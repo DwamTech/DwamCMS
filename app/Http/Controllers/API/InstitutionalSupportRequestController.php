@@ -20,40 +20,40 @@ class InstitutionalSupportRequestController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'institution_name' => 'required|string|max:255',
-            'license_number' => 'required|string|max:255',
-            'license_certificate_path' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-            'email' => 'required|email|max:255',
-            'support_letter_path' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'institution_name' => 'required|string|max:1048576',
+            'license_number' => 'required|string|max:1048576',
+            'license_certificate_path' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1048576',
+            'email' => 'required|email|max:1048576',
+            'support_letter_path' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1048576',
             'phone_number' => 'required|string|max:20',
-            'ceo_name' => 'required|string|max:255',
+            'ceo_name' => 'required|string|max:1048576',
             'ceo_mobile' => 'required|string|max:20',
             'whatsapp_number' => 'required|string|max:20',
-            'city' => 'required|string|max:255',
-            'activity_type' => 'required|string|max:255',
-            'activity_type_other' => 'nullable|required_if:activity_type,أخرى,other|string|max:255',
-            'project_name' => 'required|string|max:255',
-            'project_type' => 'required|string|max:255',
-            'project_type_other' => 'nullable|required_if:project_type,أخرى,other|string|max:255',
-            'project_file_path' => 'required|file|mimes:pdf,doc,docx|max:10240', // 10MB
-            'project_manager_name' => 'required|string|max:255',
+            'city' => 'required|string|max:1048576',
+            'activity_type' => 'required|string|max:1048576',
+            'activity_type_other' => 'nullable|required_if:activity_type,أخرى,other|string|max:1048576',
+            'project_name' => 'required|string|max:1048576',
+            'project_type' => 'required|string|max:1048576',
+            'project_type_other' => 'nullable|required_if:project_type,أخرى,other|string|max:1048576',
+            'project_file_path' => 'required|file|mimes:pdf,doc,docx|max:1048576', // 10MB
+            'project_manager_name' => 'required|string|max:1048576',
             'project_manager_mobile' => 'required|string|max:20',
-            'goal_1' => 'required|string|max:255',
-            'goal_2' => 'nullable|string|max:255',
-            'goal_3' => 'nullable|string|max:255',
-            'goal_4' => 'nullable|string|max:255',
+            'goal_1' => 'required|string|max:1048576',
+            'goal_2' => 'nullable|string|max:1048576',
+            'goal_3' => 'nullable|string|max:1048576',
+            'goal_4' => 'nullable|string|max:1048576',
             'other_goals' => 'nullable|string',
-            'beneficiaries' => 'required|string|max:255',
-            'beneficiaries_other' => 'nullable|required_if:beneficiaries,أخرى,other|string|max:255',
+            'beneficiaries' => 'required|string|max:1048576',
+            'beneficiaries_other' => 'nullable|required_if:beneficiaries,أخرى,other|string|max:1048576',
             'project_cost' => 'required|numeric|min:0',
             'project_outputs' => 'required|string',
-            'operational_plan_path' => 'required|file|mimes:pdf,doc,docx|max:10240',
+            'operational_plan_path' => 'required|file|mimes:pdf,doc,docx|max:1048576',
             'support_scope' => 'required|in:full,partial',
             'amount_requested' => 'required|numeric|min:0',
-            'account_name' => 'required|string|max:255',
+            'account_name' => 'required|string|max:1048576',
             'bank_account_iban' => 'required|string|max:50',
-            'bank_name' => 'required|string|max:100',
-            'bank_certificate_path' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'bank_name' => 'required|string|max:1048576',
+            'bank_certificate_path' => 'required|file|mimes:pdf,jpg,jpeg,png|max:1048576',
         ]);
 
         if ($validator->fails()) {
@@ -80,7 +80,11 @@ class InstitutionalSupportRequestController extends Controller
             }
 
             // Generate Request Number (e.g., ORG-YYYY-RANDOM)
-            $data['request_number'] = 'ORG-' . date('Y') . '-' . strtoupper(Str::random(6));
+            // Generate Sequential Request Number (0000, 0001, ...)
+            $lastRequest = InstitutionalSupportRequest::latest('id')->first();
+            $nextId = $lastRequest ? $lastRequest->id + 1 : 1;
+            // Pad with zeros, ensuring at least 4 digits, but expanding if larger (e.g., 10000)
+            $data['request_number'] = str_pad($nextId, 4, '0', STR_PAD_LEFT);
 
             $requestObj = InstitutionalSupportRequest::create($data);
 
@@ -117,6 +121,7 @@ class InstitutionalSupportRequestController extends Controller
         return response()->json([
             'status' => $requestObj->status,
             'rejection_reason' => $requestObj->rejection_reason,
+            'admin_response_message' => $requestObj->admin_response_message, // Field for generic admin messages
             'created_at' => $requestObj->created_at->format('Y-m-d'),
         ], 200);
     }
@@ -161,18 +166,31 @@ class InstitutionalSupportRequestController extends Controller
         }
 
         $validator = Validator::make($request->all(), [
-            'status' => 'required|in:pending,accepted,rejected',
+            'status' => 'required|in:pending,waiting_for_documents,documents_review,completed,rejected,archived',
             'rejection_reason' => 'nullable|required_if:status,rejected|string',
+            'admin_response_message' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $supportRequest->update([
+        $updateData = [
             'status' => $request->status,
-            'rejection_reason' => $request->status == 'rejected' ? $request->rejection_reason : null,
-        ]);
+        ];
+
+        // Save rejection_reason if provided (e.g. for rejected OR waiting_for_documents)
+        if ($request->has('rejection_reason')) {
+            $updateData['rejection_reason'] = $request->rejection_reason;
+        } elseif ($request->status == 'rejected') {
+             $updateData['rejection_reason'] = $request->rejection_reason;
+        }
+
+        if ($request->has('admin_response_message') || isset($request->admin_response_message)) {
+            $updateData['admin_response_message'] = $request->admin_response_message;
+        }
+
+        $supportRequest->update($updateData);
 
         return response()->json(['message' => 'تم تحديث حالة الطلب بنجاح', 'data' => $supportRequest]);
     }

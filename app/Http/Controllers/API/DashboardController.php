@@ -133,4 +133,72 @@ class DashboardController extends Controller
             'data' => ['count' => $count]
         ]);
     }
+
+    public function pendingRequestsValues()
+    {
+        // Get counts for ALL statuses that are considered "under processing" if needed, 
+        // but user asked for "pending" specifically or maybe "under review".
+        // Let's return the "pending" (new) + "documents_review" (user responded) separately or summed
+        // User asked for "pending" specifically to show as counter.
+        // Usually, admin needs to see:
+        // 1. Pending (New)
+        // 2. Documents Review (Needs Action)
+        
+        $individualPending = IndividualSupportRequest::where('status', 'pending')->count();
+        $individualReview = IndividualSupportRequest::where('status', 'documents_review')->count();
+        
+        $institutionalPending = InstitutionalSupportRequest::where('status', 'pending')->count();
+        $institutionalReview = InstitutionalSupportRequest::where('status', 'documents_review')->count();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'individual' => [
+                    'pending' => $individualPending,
+                    'review' => $individualReview,
+                    'total_action_needed' => $individualPending + $individualReview
+                ],
+                'institutional' => [
+                    'pending' => $institutionalPending,
+                    'review' => $institutionalReview,
+                    'total_action_needed' => $institutionalPending + $institutionalReview
+                ],
+                'total_pending' => $individualPending + $institutionalPending,
+                'total_review' => $individualReview + $institutionalReview
+            ]
+        ]);
+    }
+
+    public function supportStats()
+    {
+        // Institutional Stats
+        $instTotal = InstitutionalSupportRequest::count();
+        $instReview = InstitutionalSupportRequest::whereIn('status', ['pending', 'documents_review', 'waiting_for_documents'])->count();
+        $instCompleted = InstitutionalSupportRequest::where('status', 'completed')->count();
+        $instRejected = InstitutionalSupportRequest::where('status', 'rejected')->count();
+
+        // Individual Stats
+        $indTotal = IndividualSupportRequest::count();
+        $indReview = IndividualSupportRequest::whereIn('status', ['pending', 'documents_review', 'waiting_for_documents'])->count();
+        $indCompleted = IndividualSupportRequest::where('status', 'completed')->count();
+        $indRejected = IndividualSupportRequest::where('status', 'rejected')->count();
+
+        return response()->json([
+            'status' => 'success',
+            'data' => [
+                'institutional' => [
+                    'total' => $instTotal,
+                    'under_review' => $instReview,
+                    'accepted' => $instCompleted,
+                    'rejected' => $instRejected
+                ],
+                'individual' => [
+                    'total' => $indTotal,
+                    'under_review' => $indReview,
+                    'accepted' => $indCompleted,
+                    'rejected' => $indRejected
+                ]
+            ]
+        ]);
+    }
 }
