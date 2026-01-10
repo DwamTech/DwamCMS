@@ -34,16 +34,17 @@ class BookSeriesController extends Controller
     public function show($id)
     {
         $series = BookSeries::find($id);
-        if (!$series) {
+        if (! $series) {
             return response()->json(['message' => 'السلسلة غير موجودة'], 404);
         }
+
         return response()->json($series);
     }
 
     public function update(Request $request, $id)
     {
         $series = BookSeries::find($id);
-        if (!$series) {
+        if (! $series) {
             return response()->json(['message' => 'السلسلة غير موجودة'], 404);
         }
 
@@ -64,7 +65,7 @@ class BookSeriesController extends Controller
     public function destroy($id)
     {
         $series = BookSeries::find($id);
-        if (!$series) {
+        if (! $series) {
             return response()->json(['message' => 'السلسلة غير موجودة'], 404);
         }
 

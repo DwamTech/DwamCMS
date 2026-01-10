@@ -5,15 +5,12 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\IndividualSupportRequest;
 use App\Models\InstitutionalSupportRequest;
-use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
 class SupportRequestController extends Controller
 {
     /**
      * Get all pending support requests (Individual & Institutional).
-     *
-     * @return JsonResponse
      */
     public function pending(): JsonResponse
     {

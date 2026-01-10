@@ -116,7 +116,7 @@ class AuthController extends Controller
         return response()->json([
             'valid' => true,
             'user' => $request->user(),
-            'message' => 'Token is valid'
+            'message' => 'Token is valid',
         ]);
     }
 }

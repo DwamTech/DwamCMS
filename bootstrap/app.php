@@ -25,7 +25,6 @@ return Application::configure(basePath: dirname(__DIR__))
             'module.status' => \App\Http\Middleware\CheckModuleStatus::class,
         ]);
 
-
         $middleware->validateCsrfTokens(except: [
             'api/*',
         ]);

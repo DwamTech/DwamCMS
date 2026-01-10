@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreAudioRequest;
 use App\Http\Requests\UpdateAudioRequest;
 use App\Models\Audio;
-use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -37,8 +36,6 @@ class AudioController extends Controller
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
 
-
-
         if ($request->hasFile('file') && $data['type'] === 'upload') {
             $data['file_path'] = $request->file('file')->store('audios/files', 'public');
         }
@@ -66,8 +63,6 @@ class AudioController extends Controller
     public function update(UpdateAudioRequest $request, Audio $audio)
     {
         $data = $request->validated();
-
-
 
         if ($request->hasFile('file') && isset($data['type']) && $data['type'] === 'upload') {
             if ($audio->file_path) {

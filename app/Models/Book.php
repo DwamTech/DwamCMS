@@ -42,7 +42,10 @@ class Book extends Model
 
     public function getAverageRatingAttribute()
     {
-        if ($this->rating_count == 0) return 0;
+        if ($this->rating_count == 0) {
+            return 0;
+        }
+
         return round($this->rating_sum / $this->rating_count, 1);
     }
 
@@ -50,9 +53,11 @@ class Book extends Model
     public function scopeRelated($query, $bookId)
     {
         $book = $this->find($bookId);
-        if (!$book || !$book->book_series_id) return $query->where('id', 0); // Empty result
+        if (! $book || ! $book->book_series_id) {
+            return $query->where('id', 0);
+        } // Empty result
 
         return $query->where('book_series_id', $book->book_series_id)
-                     ->where('id', '!=', $bookId);
+            ->where('id', '!=', $bookId);
     }
 }

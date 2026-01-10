@@ -2,17 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\HasDefaultSection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Traits\HasDefaultSection;
-
-
 
 class Article extends Model
 {
-    use HasFactory, SoftDeletes, HasDefaultSection;
-
+    use HasDefaultSection, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'user_id',

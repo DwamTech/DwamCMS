@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\InstitutionalSupportRequest>
@@ -49,7 +48,7 @@ class InstitutionalSupportRequestFactory extends Factory
             'support_scope' => fake()->randomElement(['full', 'partial']),
             'amount_requested' => fake()->randomFloat(2, 10000, 200000),
             'account_name' => fake()->company(),
-            'bank_account_iban' => 'SA' . fake()->numberBetween(1000000000, 9999999999),
+            'bank_account_iban' => 'SA'.fake()->numberBetween(1000000000, 9999999999),
             'bank_name' => fake()->company(),
             'bank_certificate_path' => 'placeholders/bank_cert.pdf',
             'status' => $status,

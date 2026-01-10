@@ -13,6 +13,6 @@ class DailyVisit extends Model
         'visit_date',
         'views_count',
         'unique_visitors',
-        'platform'
+        'platform',
     ];
 }

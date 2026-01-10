@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -14,7 +14,7 @@ return new class extends Migration
     {
         Schema::table('admin_notifications', function (Blueprint $table) {
             // If 'body' exists but 'message' doesn't, rename it
-            if (Schema::hasColumn('admin_notifications', 'body') && !Schema::hasColumn('admin_notifications', 'message')) {
+            if (Schema::hasColumn('admin_notifications', 'body') && ! Schema::hasColumn('admin_notifications', 'message')) {
                 $table->renameColumn('body', 'message');
             }
 
@@ -31,7 +31,7 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('admin_notifications', function (Blueprint $table) {
-            if (Schema::hasColumn('admin_notifications', 'message') && !Schema::hasColumn('admin_notifications', 'body')) {
+            if (Schema::hasColumn('admin_notifications', 'message') && ! Schema::hasColumn('admin_notifications', 'body')) {
                 $table->renameColumn('message', 'body');
             }
         });

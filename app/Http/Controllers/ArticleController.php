@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreArticleRequest;
 use App\Http\Requests\UpdateArticleRequest;
 use App\Models\Article;
-use App\Models\Section;
 use App\Services\ImageUploadService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cookie;
@@ -58,8 +57,6 @@ class ArticleController extends Controller
         if ($section_id) {
             $data['section_id'] = $section_id;
         }
-
-
 
         // issue_id is now optional and not passed via route in this context
         // if ($issue_id) $data['issue_id'] = $issue_id;
@@ -151,8 +148,6 @@ class ArticleController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
-
-
         // Handle Image Upload
         if ($request->hasFile('featured_image')) {
             // Delete old image if exists
@@ -166,29 +161,28 @@ class ArticleController extends Controller
             );
         }
 
-
-
         // Check for scheduled publishing
         if (isset($data['published_at'])) {
-             if (\Carbon\Carbon::parse($data['published_at'])->isFuture()) {
+            if (\Carbon\Carbon::parse($data['published_at'])->isFuture()) {
                 if (isset($data['status']) && $data['status'] === 'published') {
                     $data['status'] = 'draft';
                 }
-             }
+            }
         } elseif (isset($data['gregorian_date'])) {
-             try {
+            try {
                 $gDate = \Carbon\Carbon::parse($data['gregorian_date']);
                 // Only if trying to publish
                 if ($gDate->isFuture() && isset($data['status']) && $data['status'] === 'published') {
                     $data['published_at'] = $gDate;
                     $data['status'] = 'draft';
                 }
-             } catch (\Exception $e) { }
+            } catch (\Exception $e) {
+            }
         }
 
         // Maintain published_at consistency
         if (isset($data['status']) && $data['status'] === 'published') {
-            if (empty($data['published_at']) && !$article->published_at) {
+            if (empty($data['published_at']) && ! $article->published_at) {
                 $data['published_at'] = now();
             }
         }
@@ -225,14 +219,14 @@ class ArticleController extends Controller
     public function toggleStatus(Request $request, Article $article)
     {
         $user = $request->user();
-        if (!$user->isAdmin()) {
+        if (! $user->isAdmin()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
         $newStatus = $article->status === 'published' ? 'draft' : 'published';
-        
+
         $data = ['status' => $newStatus];
-        
+
         // If publishing, forcing published_at to now() as requested
         if ($newStatus === 'published') {
             $data['published_at'] = now();
@@ -244,7 +238,7 @@ class ArticleController extends Controller
         return response()->json([
             'message' => 'Article status updated successfully',
             'status' => $newStatus,
-            'article' => $article
+            'article' => $article,
         ]);
     }
 

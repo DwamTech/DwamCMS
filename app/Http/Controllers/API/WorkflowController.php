@@ -17,7 +17,7 @@ class WorkflowController extends Controller
             'request_number' => 'required|string',
             'phone_number' => 'required|string',
             'type' => 'required|in:individual,institutional',
-            
+
             // The 3 required files
             'closure_receipt' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:1048576',
             'project_report' => 'nullable|file|mimes:pdf,doc,docx|max:1048576',
@@ -35,7 +35,7 @@ class WorkflowController extends Controller
                 ->first();
         }
 
-        if (!$supportRequest) {
+        if (! $supportRequest) {
             return response()->json(['message' => 'الطلب غير موجود أو البيانات غير صحيحة'], 404);
         }
 
@@ -43,7 +43,7 @@ class WorkflowController extends Controller
         // Only allow upload if status allows it (e.g., waiting_for_documents) OR pending if we allow initial update
         // The user journey says: "العميل هيدخل يتحقق علي طلبه هيلاقي ( رسلة الرفض او رسالة القبول ) ... بيرد العميل ... يتحول نوع الطلب لي تحت المراجعة"
         // So allow upload if status is 'waiting_for_documents' (Accepted initially)
-        
+
         // Let's allow updating if it is waiting for docs.
         /*
         if ($supportRequest->status !== 'waiting_for_documents') {
@@ -61,12 +61,12 @@ class WorkflowController extends Controller
             $data['project_report_path'] = $request->file('project_report')->store('workflow/reports', 'public');
         }
         if ($request->hasFile('support_letter_response')) {
-             if ($request->type === 'institutional') {
-                 $data['support_letter_response_path'] = $request->file('support_letter_response')->store('workflow/letters', 'public');
-             } 
-             // Note: Individual table doesn't have support_letter_response_path column in migration, only receipt and report.
-             // If individual sends it, we ignore or need to add column. Based on migration we added 3 cols to Institution and 2 to Individual?
-             // Let's re-check migration content if needed. Assuming current migration state.
+            if ($request->type === 'institutional') {
+                $data['support_letter_response_path'] = $request->file('support_letter_response')->store('workflow/letters', 'public');
+            }
+            // Note: Individual table doesn't have support_letter_response_path column in migration, only receipt and report.
+            // If individual sends it, we ignore or need to add column. Based on migration we added 3 cols to Institution and 2 to Individual?
+            // Let's re-check migration content if needed. Assuming current migration state.
         }
 
         // 4. Update Status to 'documents_review' (تحت المراجعة again)
@@ -76,7 +76,7 @@ class WorkflowController extends Controller
 
         return response()->json([
             'message' => 'تم رفع الملفات بنجاح وتحويل الطلب للمراجعة',
-            'status' => 'documents_review'
+            'status' => 'documents_review',
         ]);
     }
 }

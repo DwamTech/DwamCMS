@@ -4,7 +4,8 @@ require __DIR__.'/vendor/autoload.php';
 
 $baseUrl = 'http://127.0.0.1:8000/api';
 
-function makeRequest($url, $method = 'GET', $data = []) {
+function makeRequest($url, $method = 'GET', $data = [])
+{
     $ch = curl_init();
     $options = [
         CURLOPT_URL => $url,
@@ -32,9 +33,9 @@ $data1 = [
     'name' => 'Ahmed Visitor',
     'email' => 'ahmed@example.com',
     'message' => 'I suggest adding a dark mode.',
-    'type' => 'suggestion'
+    'type' => 'suggestion',
 ];
-$res1 = makeRequest($baseUrl . '/feedback', 'POST', $data1);
+$res1 = makeRequest($baseUrl.'/feedback', 'POST', $data1);
 print_r($res1);
 
 echo "\n--- Test 2: Submit Complaint ---\n";
@@ -42,19 +43,19 @@ $data2 = [
     'name' => 'Angry User',
     'email' => 'angry@example.com',
     'message' => 'The site is too slow!',
-    'type' => 'complaint'
+    'type' => 'complaint',
 ];
-$res2 = makeRequest($baseUrl . '/feedback', 'POST', $data2);
+$res2 = makeRequest($baseUrl.'/feedback', 'POST', $data2);
 print_r($res2);
 
 echo "\n--- Test 3: List All Feedback (Admin) ---\n";
-$res3 = makeRequest($baseUrl . '/admin/feedback', 'GET');
+$res3 = makeRequest($baseUrl.'/admin/feedback', 'GET');
 print_r($res3);
 
 echo "\n--- Test 4: Filter Complaints Only ---\n";
-$res4 = makeRequest($baseUrl . '/admin/feedback?type=complaint', 'GET');
+$res4 = makeRequest($baseUrl.'/admin/feedback?type=complaint', 'GET');
 $data = $res4['body']['data'] ?? [];
-echo "Count: " . count($data) . "\n";
+echo 'Count: '.count($data)."\n";
 if (count($data) > 0) {
-    echo "Type of first item: " . ($data[0]['type'] ?? 'unknown') . "\n";
+    echo 'Type of first item: '.($data[0]['type'] ?? 'unknown')."\n";
 }

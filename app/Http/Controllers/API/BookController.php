@@ -17,12 +17,13 @@ class BookController extends Controller
         if ($request->has('series_id')) {
             $query->where('book_series_id', $request->series_id);
         }
-        
+
         if ($request->has('type')) {
-             $query->where('type', $request->type);
+            $query->where('type', $request->type);
         }
 
         $books = $query->latest()->paginate(20);
+
         return response()->json($books);
     }
 
@@ -30,8 +31,8 @@ class BookController extends Controller
     public function show($id)
     {
         $book = Book::with('series')->find($id);
-        
-        if (!$book) {
+
+        if (! $book) {
             return response()->json(['message' => 'الكتاب غير موجود'], 404);
         }
 
@@ -43,9 +44,9 @@ class BookController extends Controller
         // If part of series, bring siblings
         if ($book->type === 'part' && $book->book_series_id) {
             $siblings = Book::where('book_series_id', $book->book_series_id)
-                            ->where('id', '!=', $book->id)
-                            ->select('id', 'title', 'cover_path', 'cover_type')
-                            ->get();
+                ->where('id', '!=', $book->id)
+                ->select('id', 'title', 'cover_path', 'cover_type')
+                ->get();
             $response['related_parts'] = $siblings;
         }
 
@@ -64,8 +65,8 @@ class BookController extends Controller
         }
 
         $book = Book::find($id);
-        if (!$book) {
-             return response()->json(['message' => 'الكتاب غير موجود'], 404);
+        if (! $book) {
+            return response()->json(['message' => 'الكتاب غير موجود'], 404);
         }
 
         $book->increment('rating_count');
@@ -73,7 +74,7 @@ class BookController extends Controller
 
         return response()->json([
             'message' => 'تم التقييم بنجاح',
-            'average_rating' => $book->average_rating
+            'average_rating' => $book->average_rating,
         ]);
     }
 
@@ -100,7 +101,7 @@ class BookController extends Controller
         }
 
         $data = $validator->validated();
-        
+
         // Handle File
         if ($request->hasFile('file_path')) {
             $data['file_path'] = $request->file('file_path')->store('books/files', 'public');
@@ -108,14 +109,14 @@ class BookController extends Controller
 
         // Handle Cover
         if ($request->cover_type === 'upload' && $request->hasFile('cover_path')) {
-             $data['cover_path'] = $request->file('cover_path')->store('books/covers', 'public');
+            $data['cover_path'] = $request->file('cover_path')->store('books/covers', 'public');
         } elseif ($request->cover_type === 'auto') {
             // Placeholder logic for now, or generated on frontend?
             // We just store a default path or null
-            $data['cover_path'] = 'defaults/book_cover.png'; 
+            $data['cover_path'] = 'defaults/book_cover.png';
         }
 
-        // Keywords is array, but casted to array in model. 
+        // Keywords is array, but casted to array in model.
         // Laravel handles JSON casting automatically if input is array.
 
         $book = Book::create($data);
@@ -127,7 +128,7 @@ class BookController extends Controller
     public function update(Request $request, $id)
     {
         $book = Book::find($id);
-        if (!$book) {
+        if (! $book) {
             return response()->json(['message' => 'الكتاب غير موجود'], 404);
         }
 
@@ -160,7 +161,7 @@ class BookController extends Controller
 
         // Handle Cover Update
         if ($request->hasFile('cover_path')) {
-             $data['cover_path'] = $request->file('cover_path')->store('books/covers', 'public');
+            $data['cover_path'] = $request->file('cover_path')->store('books/covers', 'public');
         }
 
         $book->update($data);
@@ -172,11 +173,12 @@ class BookController extends Controller
     public function destroy($id)
     {
         $book = Book::find($id);
-        if (!$book) {
+        if (! $book) {
             return response()->json(['message' => 'الكتاب غير موجود'], 404);
         }
 
         $book->delete();
+
         return response()->json(['message' => 'تم حذف الكتاب بنجاح']);
     }
 

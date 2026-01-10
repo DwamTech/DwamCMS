@@ -1,4 +1,5 @@
 <?php
+
 $baseUrl = 'http://127.0.0.1:8000/api';
 $ch = curl_init("$baseUrl/links");
 curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);

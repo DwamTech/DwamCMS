@@ -6,7 +6,6 @@ use App\Http\Requests\StoreGalleryRequest;
 use App\Http\Requests\UpdateGalleryRequest;
 use App\Models\Gallery;
 use App\Models\GalleryImage;
-use App\Models\Section;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,8 +32,6 @@ class GalleryController extends Controller
     {
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
-
-
 
         if ($request->hasFile('image')) {
             $data['cover_image'] = $request->file('image')->store('galleries/covers', 'public');
@@ -65,8 +62,6 @@ class GalleryController extends Controller
     public function update(UpdateGalleryRequest $request, Gallery $gallery)
     {
         $data = $request->validated();
-
-
 
         if ($request->hasFile('image')) {
             if ($gallery->cover_image) {

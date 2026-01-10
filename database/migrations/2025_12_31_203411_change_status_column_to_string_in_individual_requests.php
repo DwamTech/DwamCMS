@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('individual_support_requests', function (Blueprint $table) {
-             // Changing ENUM to STRING to allow more statuses
+            // Changing ENUM to STRING to allow more statuses
             $table->string('status')->default('pending')->change();
         });
     }

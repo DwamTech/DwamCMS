@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasDefaultSection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\HasDefaultSection;
-
 
 class Audio extends Model
 {
-    use HasFactory, HasDefaultSection;
-
+    use HasDefaultSection, HasFactory;
 
     protected $table = 'audios';
 

@@ -1,29 +1,29 @@
 <?php
 
-use App\Models\User;
 use App\Models\InstitutionalSupportRequest;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
-require __DIR__ . '/../vendor/autoload.php';
-$app = require __DIR__ . '/../bootstrap/app.php';
+require __DIR__.'/../vendor/autoload.php';
+$app = require __DIR__.'/../bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 echo "--- Starting Support Workflow Test ---\n";
 
 // 1. Setup Admin User
 $admin = User::where('email', 'admin@dwam.com')->first();
-if (!$admin) {
-    die("Error: Admin user not found. Run seeders first.\n");
+if (! $admin) {
+    exit("Error: Admin user not found. Run seeders first.\n");
 }
 Auth::login($admin);
-echo "[+] Logged in as Admin: " . $admin->name . "\n";
+echo '[+] Logged in as Admin: '.$admin->name."\n";
 
 // 2. Create Initial Request (Simulating Client Submission)
 // We create directly to focus on workflow status transitions
-$requestNumber = 'TEST-' . rand(1000, 9999);
+$requestNumber = 'TEST-'.rand(1000, 9999);
 $phone = '0500000000';
 
 $supportRequest = InstitutionalSupportRequest::create([
@@ -55,7 +55,7 @@ $supportRequest = InstitutionalSupportRequest::create([
     'bank_account_iban' => 'SA123456789',
     'bank_name' => 'AlRajhi',
     'bank_certificate_path' => 'test/bank.pdf',
-    'status' => 'pending'
+    'status' => 'pending',
 ]);
 
 echo "[+] Created Test Request: $requestNumber (Status: {$supportRequest->status})\n";
@@ -66,16 +66,18 @@ $controller = app(\App\Http\Controllers\API\InstitutionalSupportRequestControlle
 
 $updateRequest = Request::create("/api/admin/support/institutional/requests/{$supportRequest->id}/update", 'POST', [
     'status' => 'waiting_for_documents',
-    'admin_response_message' => 'Please upload the receipts and report.'
+    'admin_response_message' => 'Please upload the receipts and report.',
 ]);
-$updateRequest->setUserResolver(function () use ($admin) { return $admin; });
+$updateRequest->setUserResolver(function () use ($admin) {
+    return $admin;
+});
 
 $response = $controller->update($updateRequest, $supportRequest->id);
 $data = json_decode($response->getContent(), true);
 
 if ($response->status() === 200 && $data['data']['status'] === 'waiting_for_documents') {
     echo "[SUCCESS] Status changed to 'waiting_for_documents'.\n";
-    echo " > Admin Message: " . $data['data']['admin_response_message'] . "\n";
+    echo ' > Admin Message: '.$data['data']['admin_response_message']."\n";
 } else {
     echo "[FAILURE] Failed to update status.\n";
     print_r($data);
@@ -84,14 +86,13 @@ if ($response->status() === 200 && $data['data']['status'] === 'waiting_for_docu
 
 // 4. Client Checks Status
 echo "\n--- Step 2: Client Checks Status ---\n";
-$checkRequest = Request::create("/api/support/institutional/status", 'POST', [
+$checkRequest = Request::create('/api/support/institutional/status', 'POST', [
     'request_number' => $requestNumber,
-    'phone_number' => $phone
+    'phone_number' => $phone,
 ]);
 $response = $controller->checkStatus($checkRequest);
 $data = json_decode($response->getContent(), true);
-echo " > Client sees status: " . $data['status'] . "\n";
-
+echo ' > Client sees status: '.$data['status']."\n";
 
 // 5. Client Uploads Documents (Workflow Controller)
 echo "\n--- Step 3: Client Uploads Workflow Docs ---\n";
@@ -102,11 +103,11 @@ $workflowController = app(\App\Http\Controllers\API\WorkflowController::class);
 $uploadRequest = Request::create('/api/support/workflow/upload', 'POST', [
     'request_number' => $requestNumber,
     'phone_number' => $phone,
-    'type' => 'institutional'
+    'type' => 'institutional',
 ], [], [
     'closure_receipt' => $fakeFile,
     'project_report' => $fakeFile,
-    'support_letter_response' => $fakeFile
+    'support_letter_response' => $fakeFile,
 ]);
 
 $response = $workflowController->uploadDocuments($uploadRequest);
@@ -129,9 +130,11 @@ echo " > Receipt Path: {$supportRequest->closure_receipt_path}\n";
 echo "\n--- Step 4: Admin Final Approval ---\n";
 $finalRequest = Request::create("/api/admin/support/institutional/requests/{$supportRequest->id}/update", 'POST', [
     'status' => 'completed',
-    'admin_response_message' => 'Good job, approved.'
+    'admin_response_message' => 'Good job, approved.',
 ]);
-$finalRequest->setUserResolver(function () use ($admin) { return $admin; });
+$finalRequest->setUserResolver(function () use ($admin) {
+    return $admin;
+});
 
 $response = $controller->update($finalRequest, $supportRequest->id);
 $data = json_decode($response->getContent(), true);

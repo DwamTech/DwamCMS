@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\IndividualSupportRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 class IndividualSupportRequestController extends Controller
 {
@@ -15,7 +14,7 @@ class IndividualSupportRequestController extends Controller
         // Check if enabled
         $isEnabled = \App\Models\SupportSetting::where('key', 'individual_support_enabled')->value('value');
         if ($isEnabled !== 'true') {
-             return response()->json(['message' => 'عذراً، التقديم على طلبات دعم الأفراد مغلق حالياً.'], 403);
+            return response()->json(['message' => 'عذراً، التقديم على طلبات دعم الأفراد مغلق حالياً.'], 403);
         }
 
         $validator = Validator::make($request->all(), [
@@ -58,16 +57,16 @@ class IndividualSupportRequestController extends Controller
 
             // Handle File Uploads
             $fileFields = [
-                'identity_image_path', 
-                'academic_qualification_path', 
-                'cv_path', 
-                'recommendation_path'
+                'identity_image_path',
+                'academic_qualification_path',
+                'cv_path',
+                'recommendation_path',
             ];
 
             foreach ($fileFields as $field) {
                 if ($request->hasFile($field)) {
                     // Store in a specific directory, e.g., storage/app/public/support_requests/{field}
-                    $path = $request->file($field)->store('support_requests/' . $field, 'public');
+                    $path = $request->file($field)->store('support_requests/'.$field, 'public');
                     $data[$field] = $path;
                 }
             }
@@ -107,7 +106,7 @@ class IndividualSupportRequestController extends Controller
             ->where('phone_number', $request->phone_number)
             ->first();
 
-        if (!$supportRequest) {
+        if (! $supportRequest) {
             return response()->json(['message' => 'الطلب غير موجود أو البيانات غير صحيحة'], 404);
         }
 
@@ -131,30 +130,32 @@ class IndividualSupportRequestController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('full_name', 'like', "%{$search}%")
-                  ->orWhere('request_number', 'like', "%{$search}%")
-                  ->orWhere('phone_number', 'like', "%{$search}%");
+                    ->orWhere('request_number', 'like', "%{$search}%")
+                    ->orWhere('phone_number', 'like', "%{$search}%");
             });
         }
 
         $requests = $query->latest()->paginate(20);
+
         return response()->json($requests);
     }
 
     public function show($id)
     {
         $request = IndividualSupportRequest::find($id);
-        if (!$request) {
+        if (! $request) {
             return response()->json(['message' => 'الطلب غير موجود'], 404);
         }
+
         return response()->json($request);
     }
 
     public function update(Request $request, $id)
     {
         $supportRequest = IndividualSupportRequest::find($id);
-        if (!$supportRequest) {
+        if (! $supportRequest) {
             return response()->json(['message' => 'الطلب غير موجود'], 404);
         }
 
@@ -176,9 +177,9 @@ class IndividualSupportRequestController extends Controller
         if ($request->has('rejection_reason')) {
             $updateData['rejection_reason'] = $request->rejection_reason;
         } elseif ($request->status == 'rejected') {
-            // This case should be covered by has('rejection_reason'), 
+            // This case should be covered by has('rejection_reason'),
             // but just in case it was explicitly null in some edge case context not handled by 'has'
-             $updateData['rejection_reason'] = $request->rejection_reason;
+            $updateData['rejection_reason'] = $request->rejection_reason;
         }
 
         if ($request->has('admin_response_message') || isset($request->admin_response_message)) {
@@ -193,7 +194,7 @@ class IndividualSupportRequestController extends Controller
     public function destroy($id)
     {
         $supportRequest = IndividualSupportRequest::find($id);
-        if (!$supportRequest) {
+        if (! $supportRequest) {
             return response()->json(['message' => 'الطلب غير موجود'], 404);
         }
 

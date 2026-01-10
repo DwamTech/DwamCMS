@@ -15,12 +15,12 @@ class SystemContentController extends Controller
     {
         $content = \App\Models\SystemContent::where('key', $key)->first();
 
-        if (!$content) {
+        if (! $content) {
             // Return empty or default structure if not found to avoid 404 block for frontend
             return response()->json([
                 'key' => $key,
                 'content' => '',
-                'exists' => false
+                'exists' => false,
             ]);
         }
 
@@ -43,7 +43,7 @@ class SystemContentController extends Controller
 
         return response()->json([
             'message' => 'تم تحديث المحتوى بنجاح',
-            'data' => $content
+            'data' => $content,
         ]);
     }
 }

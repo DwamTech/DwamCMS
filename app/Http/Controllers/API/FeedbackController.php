@@ -19,6 +19,7 @@ class FeedbackController extends Controller
         }
 
         $feedback = $query->latest()->paginate(20);
+
         return response()->json($feedback);
     }
 
@@ -47,8 +48,8 @@ class FeedbackController extends Controller
         Feedback::create($data);
 
         // Custom message based on type
-        $message = $request->type == 'complaint' 
-            ? 'تم استلام شكواك وسنعمل على حلها قريباً.' 
+        $message = $request->type == 'complaint'
+            ? 'تم استلام شكواك وسنعمل على حلها قريباً.'
             : 'شكراً لمقترحك، نسعد بمساهمتك.';
 
         return response()->json(['message' => $message], 201);
@@ -58,11 +59,12 @@ class FeedbackController extends Controller
     public function destroy($id)
     {
         $feedback = Feedback::find($id);
-        if (!$feedback) {
+        if (! $feedback) {
             return response()->json(['message' => 'الرسالة غير موجودة'], 404);
         }
 
         $feedback->delete();
+
         return response()->json(['message' => 'تم حذف الرسالة بنجاح']);
     }
 }

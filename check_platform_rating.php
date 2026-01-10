@@ -4,7 +4,8 @@ require __DIR__.'/vendor/autoload.php';
 
 $baseUrl = 'http://127.0.0.1:8000/api';
 
-function makeRequest($url, $method = 'GET', $data = []) {
+function makeRequest($url, $method = 'GET', $data = [])
+{
     $ch = curl_init();
     $options = [
         CURLOPT_URL => $url,
@@ -28,23 +29,23 @@ function makeRequest($url, $method = 'GET', $data = []) {
 }
 
 echo "--- Test 1: Get Initial Stats (Should be 0) ---\n";
-$res1 = makeRequest($baseUrl . '/platform-rating', 'GET');
+$res1 = makeRequest($baseUrl.'/platform-rating', 'GET');
 print_r($res1);
 
 echo "\n--- Test 2: Submit 5 Star Rating ---\n";
-$res2 = makeRequest($baseUrl . '/platform-rating', 'POST', ['rating' => 5]);
+$res2 = makeRequest($baseUrl.'/platform-rating', 'POST', ['rating' => 5]);
 print_r($res2);
 
 echo "\n--- Test 3: Get Updated Stats (Should be 5.0, count 1) ---\n";
-$res3 = makeRequest($baseUrl . '/platform-rating', 'GET');
+$res3 = makeRequest($baseUrl.'/platform-rating', 'GET');
 print_r($res3);
 
 echo "\n--- Test 4: Submit Spam Rating Immediately (Should Fail 429) ---\n";
-$res4 = makeRequest($baseUrl . '/platform-rating', 'POST', ['rating' => 1]);
+$res4 = makeRequest($baseUrl.'/platform-rating', 'POST', ['rating' => 1]);
 print_r($res4);
 
 if (($res4['code'] ?? 0) == 429) {
     echo ">> Spam Protection Working: Request blocked as expected.\n";
 } else {
-    echo ">> Warning: Request was not blocked. Code: " . ($res4['code'] ?? 'null') . "\n";
+    echo '>> Warning: Request was not blocked. Code: '.($res4['code'] ?? 'null')."\n";
 }

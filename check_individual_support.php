@@ -4,11 +4,12 @@ require __DIR__.'/vendor/autoload.php';
 
 $baseUrl = 'http://127.0.0.1:8000/api'; // Adjust if your local server is on a different port
 
-function makeRequest($url, $method = 'GET', $data = [], $files = []) {
+function makeRequest($url, $method = 'GET', $data = [], $files = [])
+{
     $ch = curl_init();
 
     // If we have files, we MUST use multipart/form-data
-    if (!empty($files)) {
+    if (! empty($files)) {
         foreach ($files as $key => $filePath) {
             if (file_exists($filePath)) {
                 $data[$key] = new CURLFile($filePath);
@@ -26,13 +27,13 @@ function makeRequest($url, $method = 'GET', $data = [], $files = []) {
 
     if ($method === 'POST') {
         $options[CURLOPT_POST] = true;
-        if (!empty($files)) {
-             $options[CURLOPT_POSTFIELDS] = $data; // cURL handles multipart boundary automatically when passing array with CURLFile
+        if (! empty($files)) {
+            $options[CURLOPT_POSTFIELDS] = $data; // cURL handles multipart boundary automatically when passing array with CURLFile
         } else {
-             // For normal JSON requests (like checkStatus)
-             $jsonData = json_encode($data);
-             $options[CURLOPT_POSTFIELDS] = $jsonData;
-             $options[CURLOPT_HTTPHEADER] = ['Content-Type: application/json', 'Accept: application/json'];
+            // For normal JSON requests (like checkStatus)
+            $jsonData = json_encode($data);
+            $options[CURLOPT_POSTFIELDS] = $jsonData;
+            $options[CURLOPT_HTTPHEADER] = ['Content-Type: application/json', 'Accept: application/json'];
         }
     }
 
@@ -57,7 +58,9 @@ echo "--- Test 1: Submit Individual Support Request ---\n";
 // Delete old files first to ensure we write new content
 $dummyFiles = ['test_identity.jpg', 'test_qual.pdf', 'test_cv.pdf'];
 foreach ($dummyFiles as $file) {
-    if (file_exists($file)) unlink($file);
+    if (file_exists($file)) {
+        unlink($file);
+    }
 }
 
 // Create a valid minimal 1x1 JPEG
@@ -99,16 +102,16 @@ $requestData = [
 ];
 
 $filesData = [
-    'identity_image_path' => __DIR__ . '/test_identity.jpg',
-    'academic_qualification_path' => __DIR__ . '/test_qual.pdf',
-    'cv_path' => __DIR__ . '/test_cv.pdf',
+    'identity_image_path' => __DIR__.'/test_identity.jpg',
+    'academic_qualification_path' => __DIR__.'/test_qual.pdf',
+    'cv_path' => __DIR__.'/test_cv.pdf',
 ];
 
 // Note: To send files with additional data in PHP cURL, we pass the $requestData array MERGED with CURLFile objects to POSTFIELDS.
 // But array keys must be flat.
 
 $response1 = makeRequest(
-    $baseUrl . '/support/individual/store',
+    $baseUrl.'/support/individual/store',
     'POST',
     $requestData, // This function logic above needs slight tweak to merge properly if we want 'multipart/form-data'.
     // Let's rely on the function logic: "if !empty($files) -> $data[$key] = new CURLFile".
@@ -121,18 +124,17 @@ print_r($response1);
 $requestNumber = $response1['body']['request_number'] ?? null;
 $phoneNumber = $response1['body']['phone_number'] ?? '0501234567';
 
-if (!$requestNumber) {
+if (! $requestNumber) {
     echo "CRITICAL: Failed to get request number. Stopping tests.\n";
     exit;
 }
 
 echo "\n--- Test 2: Check Status (Pending) ---\n";
-$response2 = makeRequest($baseUrl . '/support/individual/status', 'POST', [
+$response2 = makeRequest($baseUrl.'/support/individual/status', 'POST', [
     'request_number' => $requestNumber,
     'phone_number' => $phoneNumber,
 ]);
 print_r($response2);
-
 
 echo "\n--- Test 3: Admin Update Status (Simulation) ---\n";
 // Connect to DB directly to update status, or use Artisan tinker?
@@ -156,11 +158,11 @@ try {
         echo "Could not find request in DB to update!\n";
     }
 } catch (Exception $e) {
-    echo "Error updating DB: " . $e->getMessage() . "\n";
+    echo 'Error updating DB: '.$e->getMessage()."\n";
 }
 
 echo "\n--- Test 4: Check Status (Rejected) ---\n";
-$response3 = makeRequest($baseUrl . '/support/individual/status', 'POST', [
+$response3 = makeRequest($baseUrl.'/support/individual/status', 'POST', [
     'request_number' => $requestNumber,
     'phone_number' => $phoneNumber,
 ]);
@@ -168,5 +170,7 @@ print_r($response3);
 
 // Cleanup dummy files
 foreach ($dummyFiles as $file) {
-    if (file_exists($file)) unlink($file);
+    if (file_exists($file)) {
+        unlink($file);
+    }
 }

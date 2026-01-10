@@ -32,10 +32,15 @@ class AdminNotification extends Model
     // =========================================================================
 
     const CATEGORY_SUPPORT = 'support';
+
     const CATEGORY_SYSTEM = 'system';
+
     const CATEGORY_USERS = 'users';
+
     const CATEGORY_CONTENT = 'content';
+
     const CATEGORY_ENGAGEMENT = 'engagement';
+
     const CATEGORY_LIBRARY = 'library';
 
     // =========================================================================
@@ -44,31 +49,42 @@ class AdminNotification extends Model
 
     // Support
     const TYPE_NEW_INDIVIDUAL_SUPPORT = 'new_individual_support';
+
     const TYPE_NEW_INSTITUTIONAL_SUPPORT = 'new_institutional_support';
+
     const TYPE_SUPPORT_STATUS_CHANGED = 'support_status_changed';
+
     const TYPE_DOCUMENT_UPLOADED = 'document_uploaded';
 
     // System
     const TYPE_BACKUP_SUCCESS = 'backup_success';
+
     const TYPE_BACKUP_FAILED = 'backup_failed';
+
     const TYPE_BACKUP_RESTORED = 'backup_restored';
+
     const TYPE_SYSTEM_HEALTH_WARNING = 'system_health_warning';
 
     // Users
     const TYPE_NEW_USER_REGISTERED = 'new_user_registered';
+
     const TYPE_USER_ROLE_CHANGED = 'user_role_changed';
 
     // Content
     const TYPE_NEW_ARTICLE = 'new_article';
+
     const TYPE_ARTICLE_UPDATED = 'article_updated';
+
     const TYPE_NEW_VISUAL = 'new_visual';
 
     // Engagement
     const TYPE_NEW_FEEDBACK = 'new_feedback';
+
     const TYPE_NEW_PLATFORM_RATING = 'new_platform_rating';
 
     // Library
     const TYPE_NEW_BOOK_RATING = 'new_book_rating';
+
     const TYPE_DOCUMENT_DOWNLOADED = 'document_downloaded';
 
     // =========================================================================
@@ -76,7 +92,9 @@ class AdminNotification extends Model
     // =========================================================================
 
     const PRIORITY_LOW = 'low';
+
     const PRIORITY_MEDIUM = 'medium';
+
     const PRIORITY_HIGH = 'high';
 
     // =========================================================================

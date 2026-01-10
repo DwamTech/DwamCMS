@@ -32,20 +32,17 @@ Route::middleware('module.status:articles')->group(function () {
         ->middleware(EnsureVisitorCookie::class);
 });
 
-
 // Public visuals routes
 Route::middleware('module.status:visuals')->group(function () {
     Route::get('/visuals', [VisualController::class, 'index']);
     Route::get('/visuals/{visual}', [VisualController::class, 'show']);
 });
 
-
 // Public audios routes
 Route::middleware('module.status:audios')->group(function () {
     Route::get('/audios', [AudioController::class, 'index']);
     Route::get('/audios/{audio}', [AudioController::class, 'show']);
 });
-
 
 // Public galleries routes
 Route::get('/galleries', [GalleryController::class, 'index']);
@@ -95,7 +92,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/profile', [\App\Http\Controllers\API\UserManagementController::class, 'profile']);
     Route::put('/profile', [\App\Http\Controllers\API\UserManagementController::class, 'updateProfile']);
 
-
     // Protected issue routes
     Route::post('/issues', [IssueController::class, 'store']);
     Route::put('/issues/{issue}', [IssueController::class, 'update']);
@@ -135,7 +131,6 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::match(['put', 'post'], '/links/{link}', [LinkController::class, 'update']);
     Route::delete('/links/{link}', [LinkController::class, 'destroy']);
 
-
     // Backup Routes (Admin only)
     Route::middleware(['admin'])->group(function () {
         Route::get('/backups', [BackupController::class, 'index']);
@@ -152,7 +147,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // Support Settings (Admin Update)
         Route::post('/admin/support/settings/update', [\App\Http\Controllers\API\SupportSettingController::class, 'update']);
         Route::match(['get', 'post'], '/admin/support/settings/update-all', [\App\Http\Controllers\API\SupportSettingController::class, 'updateAll']);
-        
+
         // Individual Support Admin Requests
         Route::get('/admin/support/individual/requests', [\App\Http\Controllers\API\IndividualSupportRequestController::class, 'index']);
         Route::get('/admin/support/individual/requests/{id}', [\App\Http\Controllers\API\IndividualSupportRequestController::class, 'show']);
@@ -167,7 +162,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 
         // Unified Pending Requests
         Route::get('/admin/support/pending', [\App\Http\Controllers\API\SupportRequestController::class, 'pending']);
-        
+
         // Feedback Delete
         Route::delete('admin/feedback/{id}', [\App\Http\Controllers\API\FeedbackController::class, 'destroy']);
 
@@ -179,13 +174,11 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         // Document Management (Admin)
         Route::apiResource('admin/documents', \App\Http\Controllers\API\DocumentController::class)->except(['index', 'show']);
 
-
-
         // Feedback Management (Admin Index)
         Route::get('admin/feedback', [\App\Http\Controllers\API\FeedbackController::class, 'index']);
 
         // Dashboard & Analytics
-        Route::prefix('admin/dashboard')->group(function() {
+        Route::prefix('admin/dashboard')->group(function () {
             Route::get('summary', [\App\Http\Controllers\API\DashboardController::class, 'summary']);
             Route::get('analytics', [\App\Http\Controllers\API\DashboardController::class, 'analytics']);
             Route::get('recent-requests', [\App\Http\Controllers\API\DashboardController::class, 'recentRequests']);
@@ -193,8 +186,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
             Route::get('pending-requests-values', [\App\Http\Controllers\API\DashboardController::class, 'pendingRequestsValues']);
             Route::get('support-stats', [\App\Http\Controllers\API\DashboardController::class, 'supportStats']);
         });
-        
-        
+
         // User Management (Admin only)
         Route::get('admin/users', [\App\Http\Controllers\API\UserManagementController::class, 'index']);
         Route::get('admin/users/{id}', [\App\Http\Controllers\API\UserManagementController::class, 'show']);
@@ -202,7 +194,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::put('admin/users/{id}', [\App\Http\Controllers\API\UserManagementController::class, 'update']);
         Route::post('admin/users/{id}/change-password', [\App\Http\Controllers\API\UserManagementController::class, 'changePassword']);
         Route::delete('admin/users/{id}', [\App\Http\Controllers\API\UserManagementController::class, 'destroy']);
-        
+
         // Authors List
         Route::get('admin/articles/authors', [ArticleController::class, 'getAuthors']);
 
@@ -241,14 +233,14 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
 // Route::get('admin/feedback', [\App\Http\Controllers\API\FeedbackController::class, 'index']); // Removed
 
 // Public Library Routes
-Route::prefix('library')->group(function() {
+Route::prefix('library')->group(function () {
     Route::get('books', [\App\Http\Controllers\API\BookController::class, 'index']);
     Route::get('books/{id}', [\App\Http\Controllers\API\BookController::class, 'show']);
     Route::post('books/{id}/rate', [\App\Http\Controllers\API\BookController::class, 'rate']);
 });
 
 // Public Documents Routes
-Route::prefix('documents')->group(function() {
+Route::prefix('documents')->group(function () {
     Route::get('/', [\App\Http\Controllers\API\DocumentController::class, 'index']);
     Route::get('/{id}', [\App\Http\Controllers\API\DocumentController::class, 'show']);
     Route::post('/{id}/download', [\App\Http\Controllers\API\DocumentController::class, 'download']);

@@ -36,7 +36,7 @@ class CheckModuleStatus
                 'status' => 'error',
                 'message' => $message,
                 'module' => $module,
-                'enabled' => false
+                'enabled' => false,
             ], 403);
         }
 

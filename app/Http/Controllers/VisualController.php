@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreVisualRequest;
 use App\Http\Requests\UpdateVisualRequest;
-use App\Models\Section;
 use App\Models\Visual;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -43,8 +42,6 @@ class VisualController extends Controller
         $data = $request->validated();
         $data['user_id'] = $request->user()->id;
 
-
-
         // Handle File Upload
         if ($request->hasFile('file') && $data['type'] === 'upload') {
             $data['file_path'] = $request->file('file')->store('visuals/videos', 'public');
@@ -82,8 +79,6 @@ class VisualController extends Controller
     public function update(UpdateVisualRequest $request, Visual $visual)
     {
         $data = $request->validated();
-
-
 
         // Handle File Upload
         if ($request->hasFile('file') && isset($data['type']) && $data['type'] === 'upload') {

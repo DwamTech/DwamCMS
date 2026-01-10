@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Link extends Model
 {
-    use HasFactory, HasDefaultSection;
+    use HasDefaultSection, HasFactory;
 
     protected $fillable = [
         'section_id',
@@ -39,7 +39,7 @@ class Link extends Model
                 return $value;
             }
 
-            return asset('storage/' . $value);
+            return asset('storage/'.$value);
         }
 
         return null;

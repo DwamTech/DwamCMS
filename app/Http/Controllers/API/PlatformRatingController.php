@@ -16,8 +16,8 @@ class PlatformRatingController extends Controller
 
         return response()->json([
             'average_rating' => $avg ? round($avg, 1) : 0, // Current average
-            'rating_count'   => $count,
-            'max_rating'     => 5
+            'rating_count' => $count,
+            'max_rating' => 5,
         ]);
     }
 
@@ -34,14 +34,14 @@ class PlatformRatingController extends Controller
         // Spam Protection: Check if this IP rated in the last 1 minute
         $ip = $request->ip();
         $recentRating = PlatformRating::where('ip_address', $ip)
-                                      ->where('created_at', '>', now()->subMinute())
-                                      ->exists();
+            ->where('created_at', '>', now()->subMinute())
+            ->exists();
 
-        // Uncomment the lines below to ENFORCE restriction. 
+        // Uncomment the lines below to ENFORCE restriction.
         // For now, I will leave it loose for easier testing, or maybe return a friendly message?
         // Let's enforce it to show "Logic".
         if ($recentRating) {
-             return response()->json(['message' => 'عذراً، لقد قمت بالتقييم مؤخراً. يرجى الانتظار قليلاً.'], 429);
+            return response()->json(['message' => 'عذراً، لقد قمت بالتقييم مؤخراً. يرجى الانتظار قليلاً.'], 429);
         }
 
         PlatformRating::create([

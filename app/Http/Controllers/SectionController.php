@@ -25,6 +25,7 @@ class SectionController extends Controller
 
         return response()->json($section);
     }
+
     /**
      * Store a newly created resource in storage.
      */
@@ -56,13 +57,13 @@ class SectionController extends Controller
     public function update(\Illuminate\Http\Request $request, Section $section)
     {
         $request->validate([
-            'name' => 'sometimes|string|max:1048576|unique:sections,name,' . $section->id,
+            'name' => 'sometimes|string|max:1048576|unique:sections,name,'.$section->id,
             'description' => 'nullable|string',
             'is_active' => 'boolean',
         ]);
 
         $data = $request->only(['name', 'description', 'is_active']);
-        
+
         if ($request->has('name')) {
             $data['slug'] = \Illuminate\Support\Str::slug($request->name);
         }

@@ -2,15 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\HasDefaultSection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Traits\HasDefaultSection;
-
 
 class Visual extends Model
 {
-    use HasFactory, HasDefaultSection;
-
+    use HasDefaultSection, HasFactory;
 
     protected $fillable = [
         'section_id',

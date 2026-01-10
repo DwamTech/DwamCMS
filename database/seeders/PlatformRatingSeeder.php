@@ -32,13 +32,13 @@ class PlatformRatingSeeder extends Seeder
         foreach ($ratings as $index => $rating) {
             PlatformRating::create([
                 'rating' => $rating['rating'],
-                'ip_address' => '192.168.1.' . ($index + 1),
+                'ip_address' => '192.168.1.'.($index + 1),
                 'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
                 'created_at' => now()->subDays(rand(0, 30))->subHours(rand(0, 23)),
             ]);
         }
 
-        $this->command->info('✅ تم إنشاء ' . count($ratings) . ' تقييم للمنصة');
-        $this->command->info('   - متوسط التقييم: ' . round(PlatformRating::avg('rating'), 1) . ' نجوم');
+        $this->command->info('✅ تم إنشاء '.count($ratings).' تقييم للمنصة');
+        $this->command->info('   - متوسط التقييم: '.round(PlatformRating::avg('rating'), 1).' نجوم');
     }
 }

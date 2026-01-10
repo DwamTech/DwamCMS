@@ -18,7 +18,7 @@ class TrackVisits
     public function handle(Request $request, Closure $next): Response
     {
         // Skip if not GET request or if it's an API call to admin/analytics itself to avoid loops (though unlikely)
-        if (!$request->isMethod('GET')) {
+        if (! $request->isMethod('GET')) {
             return $next($request);
         }
 
@@ -35,7 +35,7 @@ class TrackVisits
         $isUnique = false;
 
         // Determine if unique visitor
-        if (!$visitorId || $lastVisitDate !== $today) {
+        if (! $visitorId || $lastVisitDate !== $today) {
             $isUnique = true;
             $visitRecord->increment('unique_visitors');
         }
@@ -62,4 +62,3 @@ class TrackVisits
         return $response;
     }
 }
-

@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Str;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\IndividualSupportRequest>
@@ -47,7 +46,7 @@ class IndividualSupportRequestFactory extends Factory
             'marital_status' => fake()->randomElement(['single', 'married']),
             'family_members_count' => fake()->numberBetween(0, 5),
             'recommendation_path' => 'placeholders/recommendation.pdf',
-            'bank_account_iban' => 'SA' . fake()->numberBetween(1000000000, 9999999999),
+            'bank_account_iban' => 'SA'.fake()->numberBetween(1000000000, 9999999999),
             'bank_name' => fake()->company(),
             'status' => $status,
             'rejection_reason' => $rejectionReason,

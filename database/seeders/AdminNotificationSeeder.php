@@ -201,7 +201,6 @@ class AdminNotificationSeeder extends Seeder
 
         $this->command->info("✅ تم إنشاء {$total} إشعار للأدمن");
         $this->command->info("   - غير مقروء: {$unread}");
-        $this->command->info("   - مقروء: " . ($total - $unread));
+        $this->command->info('   - مقروء: '.($total - $unread));
     }
 }
-

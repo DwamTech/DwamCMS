@@ -27,7 +27,7 @@ class UserManagementController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'string|max:1048576',
-            'email' => 'email|unique:users,email,' . $user->id,
+            'email' => 'email|unique:users,email,'.$user->id,
             'current_password' => 'required_with:new_password',
             'new_password' => 'nullable|min:8|confirmed',
         ]);
@@ -49,9 +49,9 @@ class UserManagementController extends Controller
         // Change password if provided
         if ($request->filled('new_password')) {
             // Verify current password
-            if (!Hash::check($request->current_password, $user->password)) {
+            if (! Hash::check($request->current_password, $user->password)) {
                 return response()->json([
-                    'errors' => ['current_password' => ['كلمة المرور الحالية غير صحيحة']]
+                    'errors' => ['current_password' => ['كلمة المرور الحالية غير صحيحة']],
                 ], 422);
             }
 
@@ -62,7 +62,7 @@ class UserManagementController extends Controller
 
         return response()->json([
             'message' => 'تم تحديث الملف الشخصي بنجاح',
-            'user' => $user->fresh()
+            'user' => $user->fresh(),
         ]);
     }
 
@@ -81,13 +81,14 @@ class UserManagementController extends Controller
         // Search by name or email
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
         $users = $query->latest()->paginate(20);
+
         return response()->json($users);
     }
 
@@ -98,7 +99,7 @@ class UserManagementController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'المستخدم غير موجود'], 404);
         }
 
@@ -130,7 +131,7 @@ class UserManagementController extends Controller
 
         return response()->json([
             'message' => 'تم إنشاء الحساب بنجاح',
-            'user' => $user
+            'user' => $user,
         ], 201);
     }
 
@@ -141,13 +142,13 @@ class UserManagementController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'المستخدم غير موجود'], 404);
         }
 
         $validator = Validator::make($request->all(), [
             'name' => 'string|max:1048576',
-            'email' => 'email|unique:users,email,' . $id,
+            'email' => 'email|unique:users,email,'.$id,
             'role' => 'in:admin,editor,author,reviewer,user',
         ]);
 
@@ -173,7 +174,7 @@ class UserManagementController extends Controller
 
         return response()->json([
             'message' => 'تم تحديث المستخدم بنجاح',
-            'user' => $user->fresh()
+            'user' => $user->fresh(),
         ]);
     }
 
@@ -184,7 +185,7 @@ class UserManagementController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'المستخدم غير موجود'], 404);
         }
 
@@ -197,11 +198,11 @@ class UserManagementController extends Controller
         }
 
         $user->update([
-            'password' => Hash::make($request->new_password)
+            'password' => Hash::make($request->new_password),
         ]);
 
         return response()->json([
-            'message' => 'تم تغيير كلمة المرور بنجاح'
+            'message' => 'تم تغيير كلمة المرور بنجاح',
         ]);
     }
 
@@ -212,21 +213,21 @@ class UserManagementController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user) {
+        if (! $user) {
             return response()->json(['message' => 'المستخدم غير موجود'], 404);
         }
 
         // Prevent self-deletion
         if ($user->id === auth()->id()) {
             return response()->json([
-                'message' => 'لا يمكنك حذف حسابك الخاص'
+                'message' => 'لا يمكنك حذف حسابك الخاص',
             ], 403);
         }
 
         $user->delete();
 
         return response()->json([
-            'message' => 'تم حذف المستخدم بنجاح'
+            'message' => 'تم حذف المستخدم بنجاح',
         ]);
     }
 }

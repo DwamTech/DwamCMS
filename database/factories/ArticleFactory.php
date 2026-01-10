@@ -18,16 +18,17 @@ class ArticleFactory extends Factory
     public function definition(): array
     {
         $title = fake()->sentence();
+
         return [
             'title' => $title,
-            'slug' => Str::slug($title) . '-' . Str::random(5),
+            'slug' => Str::slug($title).'-'.Str::random(5),
             'excerpt' => fake()->paragraph(),
             'content' => fake()->paragraphs(3, true),
             'author_name' => fake()->name(),
             'featured_image' => 'placeholders/article.jpg', // Ensure this file exists or use null
             'gregorian_date' => fake()->date(),
             // Simple Hijri conversion approximation or random string
-            'hijri_date' => '1445-01-01', 
+            'hijri_date' => '1445-01-01',
             'references' => fake()->url(),
             'keywords' => implode(',', fake()->words(5)),
             'status' => fake()->randomElement(['published', 'draft', 'archived']),

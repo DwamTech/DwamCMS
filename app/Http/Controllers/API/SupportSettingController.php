@@ -13,12 +13,12 @@ class SupportSettingController extends Controller
     public function index()
     {
         $settings = SupportSetting::pluck('value', 'key');
-        
+
         return response()->json([
             // Support settings
             'individual_support_enabled' => $settings->get('individual_support_enabled') === 'true',
             'institutional_support_enabled' => $settings->get('institutional_support_enabled') === 'true',
-            
+
             // Module settings
             'module_articles_enabled' => $settings->get('module_articles_enabled', 'true') === 'true',
             'module_audios_enabled' => $settings->get('module_audios_enabled', 'true') === 'true',
@@ -34,7 +34,7 @@ class SupportSettingController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'key' => 'required|in:individual_support_enabled,institutional_support_enabled,module_articles_enabled,module_audios_enabled,module_visuals_enabled,module_galleries_enabled,module_library_enabled,module_links_enabled',
-            'value' => 'required|in:true,false', 
+            'value' => 'required|in:true,false',
         ]);
 
         if ($validator->fails()) {
@@ -48,6 +48,7 @@ class SupportSettingController extends Controller
 
         return response()->json(['message' => 'تم تحديث الإعدادات بنجاح']);
     }
+
     // Admin: Update All Settings
     public function updateAll(Request $request)
     {

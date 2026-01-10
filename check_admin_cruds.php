@@ -6,18 +6,19 @@ $baseUrl = 'http://127.0.0.1:8000/api';
 $adminEmail = 'admin@example.com';
 $adminPassword = 'password';
 
-function sendRequest($method, $url, $data = [], $token = null) {
+function sendRequest($method, $url, $data = [], $token = null)
+{
     global $baseUrl;
     $ch = curl_init();
     $headers = ['Accept: application/json'];
-    
+
     if ($token) {
-        $headers[] = 'Authorization: Bearer ' . $token;
+        $headers[] = 'Authorization: Bearer '.$token;
     }
 
     if ($method === 'POST') {
         curl_setopt($ch, CURLOPT_POST, true);
-        if (!empty($data)) {
+        if (! empty($data)) {
             // Check if has file
             $hasFile = false;
             foreach ($data as $key => $value) {
@@ -35,14 +36,14 @@ function sendRequest($method, $url, $data = [], $token = null) {
             }
         }
     } elseif ($method === 'GET') {
-        if (!empty($data)) {
-            $url .= '?' . http_build_query($data);
+        if (! empty($data)) {
+            $url .= '?'.http_build_query($data);
         }
     } elseif ($method === 'DELETE') {
-         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
     }
 
-    curl_setopt($ch, CURLOPT_URL, $baseUrl . $url);
+    curl_setopt($ch, CURLOPT_URL, $baseUrl.$url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
@@ -59,23 +60,23 @@ $token = $loginResponse['body']['token'] ?? null;
 
 $token = $loginResponse['body']['token'] ?? null;
 
-if (!$token) {
+if (! $token) {
     echo "Login failed. Attempting to register admin...\n";
     $registerResponse = sendRequest('POST', '/register/admin', [
         'name' => 'Admin User',
         'email' => $adminEmail,
         'password' => $adminPassword,
-        'password_confirmation' => $adminPassword
+        'password_confirmation' => $adminPassword,
     ]);
-    
+
     if (($registerResponse['code'] == 200 || $registerResponse['code'] == 201) && isset($registerResponse['body']['token'])) {
-         echo "Admin registered successfully.\n";
-         $token = $registerResponse['body']['token'];
+        echo "Admin registered successfully.\n";
+        $token = $registerResponse['body']['token'];
     } else {
         // Maybe user exists but password wrong? or route doesn't exist?
         // Let's try to update password via tinker or just fail
         print_r($registerResponse['body']);
-        die("Login and Registration failed.\n");
+        exit("Login and Registration failed.\n");
     }
 }
 echo "Token acquired.\n\n";
@@ -83,16 +84,16 @@ echo "Token acquired.\n\n";
 // --- Individual Support ---
 echo "--- 2. List Individual Requests (Admin) ---\n";
 $listResponse = sendRequest('GET', '/admin/support/individual/requests', [], $token);
-echo "Count: " . count($listResponse['body']['data'] ?? []) . "\n";
+echo 'Count: '.count($listResponse['body']['data'] ?? [])."\n";
 
-if (!empty($listResponse['body']['data'])) {
+if (! empty($listResponse['body']['data'])) {
     $firstId = $listResponse['body']['data'][0]['id'];
     echo "Updating status for ID: $firstId\n";
-    
+
     $updateResponse = sendRequest('POST', "/admin/support/individual/requests/$firstId/update", [
-        'status' => 'accepted'
+        'status' => 'accepted',
     ], $token);
-    echo "Update Code: " . $updateResponse['code'] . "\n";
+    echo 'Update Code: '.$updateResponse['code']."\n";
     print_r($updateResponse['body']);
 }
 echo "\n";
@@ -104,7 +105,7 @@ sendRequest('POST', '/feedback', [
     'name' => 'To Delete',
     'email' => 'del@test.com',
     'message' => 'Delete me',
-    'type' => 'suggestion'
+    'type' => 'suggestion',
 ]);
 // Get list to find ID
 $feedbackList = sendRequest('GET', '/admin/feedback', [], $token);
@@ -115,7 +116,7 @@ if ($lastFeedback) {
     $delId = $lastFeedback['id'];
     echo "Deleting Feedback ID: $delId\n";
     $delResponse = sendRequest('DELETE', "/admin/feedback/$delId", [], $token);
-    echo "Delete Code: " . $delResponse['code'] . "\n";
+    echo 'Delete Code: '.$delResponse['code']."\n";
 }
 echo "\n";
 
@@ -129,10 +130,10 @@ if ($seriesId) {
     echo "Updating Series ID: $seriesId\n";
     $upSeries = sendRequest('POST', "/admin/library/series/$seriesId", [
         'name' => 'Updated Series Name',
-        '_method' => 'PUT' // Laravel resource route expectation
+        '_method' => 'PUT', // Laravel resource route expectation
     ], $token);
-    echo "Update Code: " . $upSeries['code'] . "\n";
-    
+    echo 'Update Code: '.$upSeries['code']."\n";
+
     // Cleanup
     sendRequest('DELETE', "/admin/library/series/$seriesId", [], $token);
     echo "Deleted Series ID: $seriesId\n";

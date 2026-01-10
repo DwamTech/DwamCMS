@@ -38,7 +38,7 @@ class PublishScheduledArticles extends Command
         if ($count > 0) {
             $this->info("Successfully published {$count} scheduled article(s).");
         } else {
-            $this->info("No scheduled articles to publish.");
+            $this->info('No scheduled articles to publish.');
         }
     }
 }

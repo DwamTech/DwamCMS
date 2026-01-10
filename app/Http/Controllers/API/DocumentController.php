@@ -5,8 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Document;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class DocumentController extends Controller
 {
@@ -20,10 +20,10 @@ class DocumentController extends Controller
         // Search by title or keywords
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%")
-                  ->orWhere('keywords', 'like', "%{$search}%");
+                    ->orWhere('description', 'like', "%{$search}%")
+                    ->orWhere('keywords', 'like', "%{$search}%");
             });
         }
 
@@ -33,6 +33,7 @@ class DocumentController extends Controller
         }
 
         $documents = $query->latest()->paginate(20);
+
         return response()->json($documents);
     }
 
@@ -83,7 +84,7 @@ class DocumentController extends Controller
 
         return response()->json([
             'message' => 'تم إضافة الملف بنجاح',
-            'data' => $document
+            'data' => $document,
         ], 201);
     }
 
@@ -94,7 +95,7 @@ class DocumentController extends Controller
     {
         $document = Document::with('user:id,name')->find($id);
 
-        if (!$document) {
+        if (! $document) {
             return response()->json(['message' => 'الملف غير موجود'], 404);
         }
 
@@ -111,7 +112,7 @@ class DocumentController extends Controller
     {
         $document = Document::find($id);
 
-        if (!$document) {
+        if (! $document) {
             return response()->json(['message' => 'الملف غير موجود'], 404);
         }
 
@@ -165,7 +166,7 @@ class DocumentController extends Controller
 
         return response()->json([
             'message' => 'تم تحديث الملف بنجاح',
-            'data' => $document
+            'data' => $document,
         ]);
     }
 
@@ -176,7 +177,7 @@ class DocumentController extends Controller
     {
         $document = Document::find($id);
 
-        if (!$document) {
+        if (! $document) {
             return response()->json(['message' => 'الملف غير موجود'], 404);
         }
 
@@ -201,7 +202,7 @@ class DocumentController extends Controller
     {
         $document = Document::find($id);
 
-        if (!$document) {
+        if (! $document) {
             return response()->json(['message' => 'الملف غير موجود'], 404);
         }
 
@@ -209,7 +210,7 @@ class DocumentController extends Controller
 
         return response()->json([
             'message' => 'تم تسجيل التحميل',
-            'download_url' => $document->source_type === 'file' ? Storage::url($document->file_path) : $document->source_link
+            'download_url' => $document->source_type === 'file' ? Storage::url($document->file_path) : $document->source_link,
         ]);
     }
 }

@@ -7,7 +7,6 @@ use App\Models\InstitutionalSupportRequest;
 use App\Models\SupportSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Str;
 
 class InstitutionalSupportRequestController extends Controller
 {
@@ -16,7 +15,7 @@ class InstitutionalSupportRequestController extends Controller
         // Check if enabled
         $isEnabled = SupportSetting::where('key', 'institutional_support_enabled')->value('value');
         if ($isEnabled !== 'true') {
-             return response()->json(['message' => 'عذراً، التقديم على طلبات دعم المؤسسات مغلق حالياً.'], 403);
+            return response()->json(['message' => 'عذراً، التقديم على طلبات دعم المؤسسات مغلق حالياً.'], 403);
         }
 
         $validator = Validator::make($request->all(), [
@@ -69,12 +68,12 @@ class InstitutionalSupportRequestController extends Controller
                 'support_letter_path',
                 'project_file_path',
                 'operational_plan_path',
-                'bank_certificate_path'
+                'bank_certificate_path',
             ];
 
             foreach ($fileFields as $field) {
                 if ($request->hasFile($field)) {
-                    $path = $request->file($field)->store('institutional_requests/' . $field, 'public');
+                    $path = $request->file($field)->store('institutional_requests/'.$field, 'public');
                     $data[$field] = $path;
                 }
             }
@@ -95,7 +94,7 @@ class InstitutionalSupportRequestController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-             return response()->json(['message' => 'حدث خطأ أثناء معالجة الطلب', 'error' => $e->getMessage()], 500);
+            return response()->json(['message' => 'حدث خطأ أثناء معالجة الطلب', 'error' => $e->getMessage()], 500);
         }
     }
 
@@ -114,7 +113,7 @@ class InstitutionalSupportRequestController extends Controller
             ->where('phone_number', $request->phone_number)
             ->first();
 
-        if (!$requestObj) {
+        if (! $requestObj) {
             return response()->json(['message' => 'الطلب غير موجود أو البيانات غير صحيحة'], 404);
         }
 
@@ -138,30 +137,32 @@ class InstitutionalSupportRequestController extends Controller
 
         if ($request->has('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('institution_name', 'like', "%{$search}%")
-                  ->orWhere('request_number', 'like', "%{$search}%")
-                  ->orWhere('phone_number', 'like', "%{$search}%");
+                    ->orWhere('request_number', 'like', "%{$search}%")
+                    ->orWhere('phone_number', 'like', "%{$search}%");
             });
         }
 
         $requests = $query->latest()->paginate(20);
+
         return response()->json($requests);
     }
 
     public function show($id)
     {
         $request = InstitutionalSupportRequest::find($id);
-        if (!$request) {
+        if (! $request) {
             return response()->json(['message' => 'الطلب غير موجود'], 404);
         }
+
         return response()->json($request);
     }
 
     public function update(Request $request, $id)
     {
         $supportRequest = InstitutionalSupportRequest::find($id);
-        if (!$supportRequest) {
+        if (! $supportRequest) {
             return response()->json(['message' => 'الطلب غير موجود'], 404);
         }
 
@@ -183,7 +184,7 @@ class InstitutionalSupportRequestController extends Controller
         if ($request->has('rejection_reason')) {
             $updateData['rejection_reason'] = $request->rejection_reason;
         } elseif ($request->status == 'rejected') {
-             $updateData['rejection_reason'] = $request->rejection_reason;
+            $updateData['rejection_reason'] = $request->rejection_reason;
         }
 
         if ($request->has('admin_response_message') || isset($request->admin_response_message)) {
@@ -198,7 +199,7 @@ class InstitutionalSupportRequestController extends Controller
     public function destroy($id)
     {
         $supportRequest = InstitutionalSupportRequest::find($id);
-        if (!$supportRequest) {
+        if (! $supportRequest) {
             return response()->json(['message' => 'الطلب غير موجود'], 404);
         }
 

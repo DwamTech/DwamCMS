@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Models\Article;
-use App\Models\User;
 use App\Models\Book;
 use App\Models\DailyVisit;
 use App\Models\IndividualSupportRequest;
 use App\Models\InstitutionalSupportRequest;
+use App\Models\User;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
@@ -17,15 +17,15 @@ class DashboardController extends Controller
     public function summary()
     {
         $today = now()->format('Y-m-d');
-        
+
         $totalArticles = Article::count();
         $totalUsers = User::where('role', 'user')->count();
         $totalBooks = Book::count(); // Assuming you have Book model
-        
+
         $pendingIndividual = IndividualSupportRequest::where('status', 'pending')->count();
         $pendingInstitutional = InstitutionalSupportRequest::where('status', 'pending')->count();
         $pendingSupportRequests = $pendingIndividual + $pendingInstitutional;
-        
+
         $todaysVisits = DailyVisit::where('visit_date', $today)->value('views_count') ?? 0;
 
         // Trends (Mock logic or basic calculation) - comparing to previous month
@@ -34,7 +34,7 @@ class DashboardController extends Controller
         $trends = [
             'articles' => '+0%',
             'users' => '+0%',
-            'visits' => '+0%'
+            'visits' => '+0%',
         ];
 
         return response()->json([
@@ -45,8 +45,8 @@ class DashboardController extends Controller
                 'daily_visits' => $todaysVisits,
                 'pending_support_requests' => $pendingSupportRequests,
                 'total_books' => $totalBooks,
-                'trends' => $trends
-            ]
+                'trends' => $trends,
+            ],
         ]);
     }
 
@@ -54,8 +54,11 @@ class DashboardController extends Controller
     {
         $period = $request->query('period', '7d');
         $days = 7;
-        if ($period == '30d') $days = 30;
-        elseif ($period == '1y') $days = 365;
+        if ($period == '30d') {
+            $days = 30;
+        } elseif ($period == '1y') {
+            $days = 365;
+        }
 
         $startDate = now()->subDays($days)->format('Y-m-d');
 
@@ -64,18 +67,18 @@ class DashboardController extends Controller
             ->get(['visit_date as date', 'views_count as visits']);
 
         // Ideally we merge with requests count per day too.
-        // Doing a simple loop or separate query. 
+        // Doing a simple loop or separate query.
         // For simplicity, mapping visits.
-        
-        $data = $visits->map(function($visit) {
+
+        $data = $visits->map(function ($visit) {
             // Count requests for this date (expensive in loop but ok for admin dashboard 7-30 days)
             $indReq = IndividualSupportRequest::whereDate('created_at', $visit->date)->count();
             $instReq = InstitutionalSupportRequest::whereDate('created_at', $visit->date)->count();
-            
+
             return [
                 'date' => $visit->date,
                 'visits' => $visit->visits,
-                'requests' => $indReq + $instReq
+                'requests' => $indReq + $instReq,
             ];
         });
 
@@ -83,7 +86,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $data
+            'data' => $data,
         ]);
     }
 
@@ -93,24 +96,24 @@ class DashboardController extends Controller
 
         // Fetch latest from both tables
         // To do this efficiently without union, we might just fetch $limit from both and sort in PHP
-        
-        $individuals = IndividualSupportRequest::latest()->take($limit)->get()->map(function($item) {
+
+        $individuals = IndividualSupportRequest::latest()->take($limit)->get()->map(function ($item) {
             return [
                 'id' => $item->id,
                 'type' => 'individual',
                 'applicant_name' => $item->full_name,
                 'status' => $item->status,
-                'created_at' => $item->created_at
+                'created_at' => $item->created_at,
             ];
         });
 
-        $institutions = InstitutionalSupportRequest::latest()->take($limit)->get()->map(function($item) {
+        $institutions = InstitutionalSupportRequest::latest()->take($limit)->get()->map(function ($item) {
             return [
                 'id' => $item->id,
                 'type' => 'institution',
                 'applicant_name' => $item->institution_name,
                 'status' => $item->status,
-                'created_at' => $item->created_at
+                'created_at' => $item->created_at,
             ];
         });
 
@@ -118,7 +121,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $merged
+            'data' => $merged,
         ]);
     }
 
@@ -130,23 +133,23 @@ class DashboardController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => ['count' => $count]
+            'data' => ['count' => $count],
         ]);
     }
 
     public function pendingRequestsValues()
     {
-        // Get counts for ALL statuses that are considered "under processing" if needed, 
+        // Get counts for ALL statuses that are considered "under processing" if needed,
         // but user asked for "pending" specifically or maybe "under review".
         // Let's return the "pending" (new) + "documents_review" (user responded) separately or summed
         // User asked for "pending" specifically to show as counter.
         // Usually, admin needs to see:
         // 1. Pending (New)
         // 2. Documents Review (Needs Action)
-        
+
         $individualPending = IndividualSupportRequest::where('status', 'pending')->count();
         $individualReview = IndividualSupportRequest::where('status', 'documents_review')->count();
-        
+
         $institutionalPending = InstitutionalSupportRequest::where('status', 'pending')->count();
         $institutionalReview = InstitutionalSupportRequest::where('status', 'documents_review')->count();
 
@@ -156,16 +159,16 @@ class DashboardController extends Controller
                 'individual' => [
                     'pending' => $individualPending,
                     'review' => $individualReview,
-                    'total_action_needed' => $individualPending + $individualReview
+                    'total_action_needed' => $individualPending + $individualReview,
                 ],
                 'institutional' => [
                     'pending' => $institutionalPending,
                     'review' => $institutionalReview,
-                    'total_action_needed' => $institutionalPending + $institutionalReview
+                    'total_action_needed' => $institutionalPending + $institutionalReview,
                 ],
                 'total_pending' => $individualPending + $institutionalPending,
-                'total_review' => $individualReview + $institutionalReview
-            ]
+                'total_review' => $individualReview + $institutionalReview,
+            ],
         ]);
     }
 
@@ -190,15 +193,15 @@ class DashboardController extends Controller
                     'total' => $instTotal,
                     'under_review' => $instReview,
                     'accepted' => $instCompleted,
-                    'rejected' => $instRejected
+                    'rejected' => $instRejected,
                 ],
                 'individual' => [
                     'total' => $indTotal,
                     'under_review' => $indReview,
                     'accepted' => $indCompleted,
-                    'rejected' => $indRejected
-                ]
-            ]
+                    'rejected' => $indRejected,
+                ],
+            ],
         ]);
     }
 }
